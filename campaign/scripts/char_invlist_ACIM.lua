@@ -34,84 +34,44 @@ local function usingEnhancedItems()
 			StringManager.contains(Extension.getExtensions(), "PFRPG - Enhanced Items"));
 end
 
-function onInit()
-    DB.addHandler("charsheet.*.inventorylist.*.isidentified", "onUpdate", onItemChanged);
-    DB.addHandler("charsheet.*.inventorylist.*.carried", "onUpdate", onItemChanged);
-    DB.addHandler("charsheet.*.inventorylist.*.count", "onUpdate", onItemChanged);
-	if usingEnhancedItems() then DB.addHandler("charsheet.*.inventorylist.*.charge", "onUpdate", onItemChanged); end
-end
-
-function onItemChanged(nodeField)
-	if not nodeField then
-		return;
+local function getWandCharges(nodeItem)
+	if not nodeItem then
+		return 0;
 	end
-	local nodeChar = DB.getChild(nodeField, "....");
-	if nodeChar then
-		local nodeItem = DB.getChild(nodeField, "..");
-		if nodeItem then
-			inventoryChanged(nodeChar, nodeItem);
-		end
-	end
-end
-
-local bAnnnounced = false
-function inventoryChanged(nodeChar, nodeItem)
-	if nodeChar and nodeItem then
-		--Debug.chat("InventoryChanged", "nodeChar", nodeChar);
-		--Debug.chat("InventoryChanged", "nodeItem", nodeItem);
-		local sItemType = string.lower(DB.getValue(nodeItem, "type", ""));
-		if not (sItemType == "potion" or sItemType == "wand" or sItemType == "scroll") then
-			return;
-		end
-		if DB.getValue(nodeItem, "isidentified") == 0 then
-			return;
-		end
-		local nUsesAvailable = 0;
-		local sSource = nodeItem.getPath();
-		if sItemType == "potion" or sItemType == "scroll" then
-			nUsesAvailable = nodeItem.getChild("count").getValue();
-		elseif sItemType == "wand" then
-			nUsesAvailable = getWandCharges(nodeItem);
-			if nUsesAvailable == 0 then
-				if not bAnnnounced then
-					ChatManager.SystemMessage(string.format('%s has no remaining charges listed. Please check it for accuracy.', DB.getValue(nodeItem, 'name', 'A wand')))
-					bAnnnounced = true
-				end
-				nUsesAvailable = 50
+	local nFieldCharges = DB.getValue(nodeItem, "charge", 0);
+	local sName = DB.getValue(nodeItem, "name", '');
+	local sCharges = sName:match("%p%d+%scharges%p");
+	sCharges = sName:match("%d+%scharges");
+	if sCharges then
+		local nNameCharges = tonumber(sCharges:match("%d+"));
+		if (nNameCharges and (nFieldCharges ~= 0)) then
+			if (nFieldCharges < nNameCharges) then
+				return nFieldCharges;
 			end
-		end
-		local sItemName = nodeItem.getChild("name").getValue();
-		local nodeSpellSet = getSpellSet(nodeChar, nodeItem.getPath());
-		--Debug.chat("inventoryChanged", "nodeSpellSet", nodeSpellSet);
-		--Debug.chat("inventoryChanged", "nodeSpellClass", nodeSpellClass);
-		--Debug.chat("inventoryChanged", "nodeItem.carried", nodeItem.getChild("carried").getValue());
-		local nodeSpell = getSpellFromItemName(sItemName);
-		if not nodeSpell then
-			return;
-		end
-		--Debug.chat("inventoryChanged", "nodeSpell", nodeSpell);
-		local nSpellLevel, nMinCasterLevel = getSpellLevel(nodeSpell);
-		local nCL = getCL(nodeItem);
-		if nCL < nMinCasterLevel then
-			nCL = nMinCasterLevel;
-		end;
-		--Debug.chat("inventoryChanged", "nSpellLevel", nSpellLevel);
-		local nCarried = DB.getValue(nodeItem, "carried", 1)
-		if nCarried ~= 2 then
-			if nodeSpellSet then
-				removeSpellClass(nodeItem, nodeSpellSet, nSpellLevel);
-			end
+		elseif usingEnhancedItems() and (nNameCharges and (nFieldCharges == 0)) then
+			DB.setValue(nodeItem, "charge", 'number', nNameCharges);				-- write charges from name to database node "charge"
+			sName = sName:gsub(sCharges, ''); sName = sName:gsub('%[%]', '');		-- trim charges from name
+			DB.setValue(nodeItem, "name", 'string', StringManager.trim(sName));		-- write trimmed name back to database node "name"
+			return nNameCharges;
 		else
-			if nodeSpellSet then
-				updateSpellSet(nodeSpellSet, nUsesAvailable, nSpellLevel);
-			elseif nCarried == 2 then
-				nodeSpellSet = addSpellToActionList(nodeChar, nodeSpell, sItemName, nUsesAvailable, nSpellLevel, nCL, nodeItem.getPath());
+			return nNameCharges;
+		end
+	end
+	return nFieldCharges;
+end
+
+local function getSpellSet(nodeChar, sItemSource)
+	if nodeChar and sItemSource ~= "" then
+		--Debug.chat("getSpellSet", "sItemSource", sItemSource);
+		for _,nodeSpellSet in pairs(DB.getChildren(nodeChar, "spellset")) do
+			if DB.getValue(nodeSpellSet, "source_name") == sItemSource then
+				return nodeSpellSet;
 			end
 		end
 	end
 end
 
-function getSpellBetweenParenthesis(sItemName)
+local function getSpellBetweenParenthesis(sItemName)
 	local sSpellName = sItemName:match("%b()");
 	if sSpellName then
 		sSpellName = sSpellName:sub(2,-2);
@@ -121,7 +81,7 @@ function getSpellBetweenParenthesis(sItemName)
 	return "";
 end
 
-function getSpellAfterOf(sItemName)
+local function getSpellAfterOf(sItemName)
 	local i, j = sItemName:find("of ");
 	if j ~= nil then
 		local sSpellName = sItemName:sub(j);
@@ -132,7 +92,7 @@ function getSpellAfterOf(sItemName)
 	return "";
 end
 
-function getSpellFromItemName(sItemName)
+local function getSpellFromItemName(sItemName)
 	local nodeSpell = nil;
 	if sItemName ~= "" then
 		local sSpellName = getSpellBetweenParenthesis(sItemName);
@@ -164,18 +124,7 @@ function getSpellFromItemName(sItemName)
 	return nil;
 end
 
-function getSpellSet(nodeChar, sItemSource)
-	if nodeChar and sItemSource ~= "" then
-		--Debug.chat("getSpellSet", "sItemSource", sItemSource);
-		for _,nodeSpellSet in pairs(DB.getChildren(nodeChar, "spellset")) do
-			if DB.getValue(nodeSpellSet, "source_name") == sItemSource then
-				return nodeSpellSet;
-			end
-		end
-	end
-end
-
-function removeSpellClass(nodeItem, nodeSpellSet, nSpellLevel)
+local function removeSpellClass(nodeItem, nodeSpellSet, nSpellLevel)
 	if nodeItem and nodeSpellSet and nSpellLevel then
 		local sItemType = DB.getValue(nodeItem, "type");
 		if sItemType == "Wand" then
@@ -194,7 +143,7 @@ function removeSpellClass(nodeItem, nodeSpellSet, nSpellLevel)
 	end
 end
 
-function updateSpellSet(nodeSpellSet, nUsesAvailable, nSpellLevel)
+local function updateSpellSet(nodeSpellSet, nUsesAvailable, nSpellLevel)
 	if nodeSpellSet and nUsesAvailable > 0 and nSpellLevel >= 0 and nSpellLevel <= 9 then
 		if DB.getValue(nodeSpellSet, "availablelevel" .. nSpellLevel) ~= nUsesAvailable then
 			DB.setValue(nodeSpellSet, "availablelevel" .. nSpellLevel, "number", nUsesAvailable);
@@ -262,7 +211,7 @@ local function addSpell(nodeSource, nodeSpellClass, nLevel)
 	return nodeNewSpell;
 end
 
-function addSpellToActionList(nodeChar, nodeSpell, sDisplayName, nUsesAvailable, nSpellLevel, nCL, sItemSource)
+local function addSpellToActionList(nodeChar, nodeSpell, sDisplayName, nUsesAvailable, nSpellLevel, nCL, sItemSource)
 	if not nodeChar or not nodeSpell or sDisplayName == "" or sItemSource == "" or nSpellLevel < 0 or nSpellLevel > 9 then
 		return;
 	end
@@ -299,7 +248,27 @@ function addSpellToActionList(nodeChar, nodeSpell, sDisplayName, nUsesAvailable,
 	return nodeSpellSet, nodeNewSpellClass;
 end
 
-function getSpellLevel(nodeSpell)
+local function getCasterLevelByClass(sClassName, sSpellClassLevel)
+	if sSpellClassLevel == "0" or sSpellClassLevel == "1" then
+		return 1;
+	end
+	local sLowerClassName = sClassName:lower();
+	--Debug.chat(sLowerClassName);
+	if StringManager.contains({CLASS_NAME_ALCHEMIST, CLASS_NAME_ANTIPALADIN, CLASS_NAME_BARD, CLASS_NAME_BLOODRAGER, CLASS_NAME_HUNTER, CLASS_NAME_INQUISITOR, CLASS_NAME_MAGUS, CLASS_NAME_PALADIN, CLASS_NAME_RANGER, CLASS_NAME_SKALD, CLASS_NAME_SUMMONER, CLASS_NAME_WARPRIEST}, sLowerClassName) then
+		return (tonumber(sSpellClassLevel)-1) * 3 + 1;
+	elseif StringManager.contains({CLASS_NAME_ARCHANIST, CLASS_NAME_ORACLE, CLASS_NAME_SORCERER}, sLowerClassName) then
+		return tonumber(sSpellClassLevel) * 2;
+	elseif StringManager.contains({CLASS_NAME_CLERIC, CLASS_NAME_DRUID, CLASS_NAME_SHAMAN, CLASS_NAME_WITCH, CLASS_NAME_WIZARD}, sLowerClassName) then
+		return (tonumber(sSpellClassLevel)-1) * 2 + 1;
+	elseif StringManager.contains({CLASS_NAME_ADEPT}, sLowerClassName) then
+		return (tonumber(sSpellClassLevel)-1) * 4;
+	elseif StringManager.contains({CLASS_NAME_BLACKGUARD, CLASS_NAME_ASSASSIN}, sLowerClassName) then
+		return tonumber(sSpellClassLevel) * 2 - 1;
+	end
+	return nil;
+end
+
+local function getSpellLevel(nodeSpell)
 	if not nodeSpell then
 		return 0;
 	end;
@@ -329,27 +298,7 @@ function getSpellLevel(nodeSpell)
 	return nSpellLevel, nLowestCasterLevel;
 end
 
-function getCasterLevelByClass(sClassName, sSpellClassLevel)
-	if sSpellClassLevel == "0" or sSpellClassLevel == "1" then
-		return 1;
-	end
-	local sLowerClassName = sClassName:lower();
-	--Debug.chat(sLowerClassName);
-	if StringManager.contains({CLASS_NAME_ALCHEMIST, CLASS_NAME_ANTIPALADIN, CLASS_NAME_BARD, CLASS_NAME_BLOODRAGER, CLASS_NAME_HUNTER, CLASS_NAME_INQUISITOR, CLASS_NAME_MAGUS, CLASS_NAME_PALADIN, CLASS_NAME_RANGER, CLASS_NAME_SKALD, CLASS_NAME_SUMMONER, CLASS_NAME_WARPRIEST}, sLowerClassName) then
-		return (tonumber(sSpellClassLevel)-1) * 3 + 1;
-	elseif StringManager.contains({CLASS_NAME_ARCHANIST, CLASS_NAME_ORACLE, CLASS_NAME_SORCERER}, sLowerClassName) then
-		return tonumber(sSpellClassLevel) * 2;
-	elseif StringManager.contains({CLASS_NAME_CLERIC, CLASS_NAME_DRUID, CLASS_NAME_SHAMAN, CLASS_NAME_WITCH, CLASS_NAME_WIZARD}, sLowerClassName) then
-		return (tonumber(sSpellClassLevel)-1) * 2 + 1;
-	elseif StringManager.contains({CLASS_NAME_ADEPT}, sLowerClassName) then
-		return (tonumber(sSpellClassLevel)-1) * 4;
-	elseif StringManager.contains({CLASS_NAME_BLACKGUARD, CLASS_NAME_ASSASSIN}, sLowerClassName) then
-		return tonumber(sSpellClassLevel) * 2 - 1;
-	end
-	return nil;
-end
-
-function getCL(nodeItem)
+local function getCL(nodeItem)
 	if not nodeItem then
 		return 0;
 	end
@@ -366,28 +315,76 @@ function getCL(nodeItem)
 	return nCL;
 end
 
-function getWandCharges(nodeItem)
-	if not nodeItem then
-		return 0;
-	end
-	local nFieldCharges = DB.getValue(nodeItem, "charge", 0);
-	local sName = DB.getValue(nodeItem, "name", '');
-	local sCharges = sName:match("%p%d+%scharges%p");
-	sCharges = sName:match("%d+%scharges");
-	if sCharges then
-		local nNameCharges = tonumber(sCharges:match("%d+"));
-		if (nNameCharges and (nFieldCharges ~= 0)) then
-			if (nFieldCharges < nNameCharges) then
-				return nFieldCharges;
+local bAnnnounced = false
+local function inventoryChanged(nodeChar, nodeItem)
+	if nodeChar and nodeItem then
+		--Debug.chat("InventoryChanged", "nodeChar", nodeChar);
+		--Debug.chat("InventoryChanged", "nodeItem", nodeItem);
+		local sItemType = string.lower(DB.getValue(nodeItem, "type", ""));
+		if not (sItemType == "potion" or sItemType == "wand" or sItemType == "scroll") then
+			return;
+		end
+		if DB.getValue(nodeItem, "isidentified") == 0 then
+			return;
+		end
+		local nUsesAvailable = 0;
+		local sSource = nodeItem.getPath();
+		if sItemType == "potion" or sItemType == "scroll" then
+			nUsesAvailable = nodeItem.getChild("count").getValue();
+		elseif sItemType == "wand" then
+			nUsesAvailable = getWandCharges(nodeItem);
+			if nUsesAvailable == 0 then
+				if not bAnnnounced then
+					ChatManager.SystemMessage(string.format('%s has no remaining charges listed. Please check it for accuracy.', DB.getValue(nodeItem, 'name', 'A wand')))
+					bAnnnounced = true
+				end
+				nUsesAvailable = 50
 			end
-		elseif usingEnhancedItems() and (nNameCharges and (nFieldCharges == 0)) then
-			DB.setValue(nodeItem, "charge", 'number', nNameCharges);				-- write charges from name to database node "charge"
-			sName = sName:gsub(sCharges, ''); sName = sName:gsub('%[%]', '');		-- trim charges from name
-			DB.setValue(nodeItem, "name", 'string', StringManager.trim(sName));		-- write trimmed name back to database node "name"
-			return nNameCharges;
+		end
+		local sItemName = nodeItem.getChild("name").getValue();
+		local nodeSpellSet = getSpellSet(nodeChar, nodeItem.getPath());
+		--Debug.chat("inventoryChanged", "nodeSpellSet", nodeSpellSet);
+		--Debug.chat("inventoryChanged", "nodeSpellClass", nodeSpellClass);
+		--Debug.chat("inventoryChanged", "nodeItem.carried", nodeItem.getChild("carried").getValue());
+		local nodeSpell = getSpellFromItemName(sItemName);
+		if not nodeSpell then
+			return;
+		end
+		--Debug.chat("inventoryChanged", "nodeSpell", nodeSpell);
+		local nSpellLevel, nMinCasterLevel = getSpellLevel(nodeSpell);
+		local nCL = getCL(nodeItem);
+		if nCL < nMinCasterLevel then
+			nCL = nMinCasterLevel;
+		end;
+		--Debug.chat("inventoryChanged", "nSpellLevel", nSpellLevel);
+		local nCarried = DB.getValue(nodeItem, "carried", 1)
+		if nCarried ~= 2 then
+			if nodeSpellSet then
+				removeSpellClass(nodeItem, nodeSpellSet, nSpellLevel);
+			end
 		else
-			return nNameCharges;
+			if nodeSpellSet then
+				updateSpellSet(nodeSpellSet, nUsesAvailable, nSpellLevel);
+			elseif nCarried == 2 then
+				nodeSpellSet = addSpellToActionList(nodeChar, nodeSpell, sItemName, nUsesAvailable, nSpellLevel, nCL, nodeItem.getPath());
+			end
 		end
 	end
-	return nFieldCharges;
+end
+
+function onItemChanged(nodeField)
+	local nodeChar = DB.getChild(nodeField, "....");
+	if nodeChar then
+		local nodeItem = DB.getChild(nodeField, "..");
+		if nodeItem then
+			inventoryChanged(nodeChar, nodeItem);
+		end
+	end
+end
+
+function onInit()
+    DB.addHandler("charsheet.*.inventorylist.*.isidentified", "onUpdate", onItemChanged);
+    DB.addHandler("charsheet.*.inventorylist.*.carried", "onUpdate", onItemChanged);
+    DB.addHandler("charsheet.*.inventorylist.*.count", "onUpdate", onItemChanged);
+	if usingEnhancedItems() then DB.addHandler("charsheet.*.inventorylist.*.charge", "onUpdate", onItemChanged); end
 end
