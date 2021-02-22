@@ -1,27 +1,27 @@
-CLASS_NAME_ALCHEMIST = "alchemist";
-CLASS_NAME_ANTIPALADIN	= "antipaladin";
-CLASS_NAME_ARCHANIST = "archanist";
-CLASS_NAME_BARD = "bard";
-CLASS_NAME_BLOODRAGER = "bloodrager";
-CLASS_NAME_CLERIC = "cleric";
-CLASS_NAME_DRUID = "druid";
-CLASS_NAME_HYUNTER = "hunter";
-CLASS_NAME_INQUISITOR = "inquisitor";
-CLASS_NAME_INVESTIGATOR = "investigator";
-CLASS_NAME_MAGUS = "magus";
-CLASS_NAME_ORACLE = "oracle";
-CLASS_NAME_PALADIN = "paladin";
-CLASS_NAME_RANGER = "ranger";
-CLASS_NAME_SHAMAN = "shaman";
-CLASS_NAME_SKALD = "skald";
-CLASS_NAME_SORCERER = "sorcerer";
-CLASS_NAME_SUMMONER = "summoner";
-CLASS_NAME_WARPRIEST = "warpriest";
-CLASS_NAME_WITCH = "witch";
-CLASS_NAME_WIZARD = "wizard";
-CLASS_NAME_ADEPT = "adept";
-CLASS_NAME_BLACKGUARD = "blackguard";
-CLASS_NAME_ASSASSIN = "assassin";
+local CLASS_NAME_ALCHEMIST = "alchemist";
+local CLASS_NAME_ANTIPALADIN	= "antipaladin";
+local CLASS_NAME_ARCHANIST = "archanist";
+local CLASS_NAME_BARD = "bard";
+local CLASS_NAME_BLOODRAGER = "bloodrager";
+local CLASS_NAME_CLERIC = "cleric";
+local CLASS_NAME_DRUID = "druid";
+local CLASS_NAME_HYUNTER = "hunter";
+local CLASS_NAME_INQUISITOR = "inquisitor";
+local CLASS_NAME_INVESTIGATOR = "investigator";
+local CLASS_NAME_MAGUS = "magus";
+local CLASS_NAME_ORACLE = "oracle";
+local CLASS_NAME_PALADIN = "paladin";
+local CLASS_NAME_RANGER = "ranger";
+local CLASS_NAME_SHAMAN = "shaman";
+local CLASS_NAME_SKALD = "skald";
+local CLASS_NAME_SORCERER = "sorcerer";
+local CLASS_NAME_SUMMONER = "summoner";
+local CLASS_NAME_WARPRIEST = "warpriest";
+local CLASS_NAME_WITCH = "witch";
+local CLASS_NAME_WIZARD = "wizard";
+local CLASS_NAME_ADEPT = "adept";
+local CLASS_NAME_BLACKGUARD = "blackguard";
+local CLASS_NAME_ASSASSIN = "assassin";
 
 local function usingKelrugemExt()
 	return (StringManager.contains(Extension.getExtensions(), "Full OverlayPackage") or
@@ -65,13 +65,15 @@ function inventoryChanged(nodeChar, nodeItem)
 		if DB.getValue(nodeItem, "isidentified") == 0 then
 			return;
 		end
-		local nCL = DB.getValue(nodeItem, "cl", 1);
 		local nUsesAvailable = 0;
 		local sSource = nodeItem.getPath();
 		if sItemType == "potion" or sItemType == "scroll" then
 			nUsesAvailable = nodeItem.getChild("count").getValue();
-		else
-			nUsesAvailable = getWantCharges(nodeItem);
+		elseif sItemType == "wand" then
+			nUsesAvailable = getWandCharges(nodeItem);
+			if nUsesAvailable == 0 then
+				nUsesAvailable = 50
+			end
 		end
 		local sItemName = nodeItem.getChild("name").getValue();
 		local nodeSpellSet = getSpellSet(nodeChar, nodeItem.getPath());
@@ -84,18 +86,20 @@ function inventoryChanged(nodeChar, nodeItem)
 		end
 		--Debug.chat("inventoryChanged", "nodeSpell", nodeSpell);
 		local nSpellLevel, nMinCasterLevel = getSpellLevel(nodeSpell);
+		local nCL = getCL(nodeItem);
 		if nCL < nMinCasterLevel then
 			nCL = nMinCasterLevel;
 		end;
 		--Debug.chat("inventoryChanged", "nSpellLevel", nSpellLevel);
-		if DB.getValue(nodeItem, "carried", 0) == 0 then
+		local nCarried = DB.getValue(nodeItem, "carried", 1)
+		if nCarried ~= 2 then
 			if nodeSpellSet then
 				removeSpellClass(nodeItem, nodeSpellSet, nSpellLevel);
 			end
 		else
 			if nodeSpellSet then
 				updateSpellSet(nodeSpellSet, nUsesAvailable, nSpellLevel);
-			else
+			elseif nCarried == 2 then
 				nodeSpellSet = addSpellToActionList(nodeChar, nodeSpell, sItemName, nUsesAvailable, nSpellLevel, nCL, nodeItem.getPath());
 			end
 		end
@@ -124,37 +128,31 @@ function getSpellAfterOf(sItemName)
 end
 
 function getSpellFromItemName(sItemName)
-	local nodeSpell1 = nil;
-	local nodeSpell2 = nil;
+	local nodeSpell = nil;
 	if sItemName ~= "" then
-		sSpellName = getSpellBetweenParenthesis(sItemName);
+		local sSpellName = getSpellBetweenParenthesis(sItemName);
+		sSpellName = sSpellName:gsub('%p', '')
 		if sSpellName ~= "" then
-			nodeSpell1 = DB.findNode("spelldesc." .. sSpellName .."@*");
-			nodeSpell2 = DB.findNode("reference.spells." .. sSpellName .. "@*");
-			if not nodeSpell1 and not nodeSpell2 then
+			nodeSpell = DB.findNode("spelldesc." .. sSpellName .."@*");
+			if not nodeSpell then nodeSpell = DB.findNode("reference.spells." .. sSpellName .. "@*") end
+			if not nodeSpell then
 				sSpellName = getSpellAfterOf(sItemName);
+				sSpellName = sSpellName:gsub('%p', '')
 				if sSpellName ~= "" then
-					nodeSpell1 = DB.findNode("spelldesc." .. sSpellName .."@*");
-					nodeSpell2 = DB.findNode("reference.spells." .. sSpellName .. "@*");
-					if nodeSpell2 then
-						return nodeSpell2;
-					end
-					return nodeSpell1;
+					nodeSpell = DB.findNode("spelldesc." .. sSpellName .."@*");
+					if not nodeSpell then nodeSpell = DB.findNode("reference.spells." .. sSpellName .. "@*") end
+					return nodeSpell;
 				end
-			elseif nodeSpell2 then
-				return nodeSpell2;
 			else
-				return nodeSpell1;
+				return nodeSpell;
 			end
 		else
-			sSpellName = getSpellAfterOf(sItemName);
+			local sSpellName = getSpellAfterOf(sItemName);
+			sSpellName = sSpellName:gsub('%p', '')
 			if sSpellName ~= "" then
-				nodeSpell1 = DB.findNode("spelldesc." .. sSpellName .."@*");
-				nodeSpell2 = DB.findNode("reference.spells." .. sSpellName .. "@*");
-				if nodeSpell2 then
-					return nodeSpell2;
-				end
-				return nodeSpell1;
+				nodeSpell = DB.findNode("spelldesc." .. sSpellName .."@*");
+				if not nodeSpell then nodeSpell = DB.findNode("reference.spells." .. sSpellName .. "@*") end
+				return nodeSpell;
 			end
 		end
 	end
@@ -333,22 +331,45 @@ function getCasterLevelByClass(sClassName, sSpellClassLevel)
 	return nil;
 end
 
-function getWantCharges(nodeItem)
+function getCL(nodeItem)
 	if not nodeItem then
 		return 0;
 	end
-	local nCharges = DB.getValue(nodeItem, "charge", 0);
-	local nName = DB.getValue(nodeItem, "name");
-	local sCharges = nName:match("%b[]");
+	local nCL = DB.getValue(nodeItem, "cl", 0);
+	local sName = DB.getValue(nodeItem, "name", '');
+	local sCL = sName:match("%pCL%s%d+%p");
+	if sCL then
+		local nNameCL = tonumber(sCL:match("%d+"));
+		if usingEnhancedItems() and nNameCL then
+			DB.setValue(nodeItem, "cl", 'number', nNameCL);							-- write CL from name to database node "cl"
+		end
+		return nNameCL or nCL;
+	end
+	return nCL;
+end
+
+function getWandCharges(nodeItem)
+	if not nodeItem then
+		return 0;
+	end
+	local nFieldCharges = DB.getValue(nodeItem, "charge", 0);
+	local sName = DB.getValue(nodeItem, "name", '');
+	local sCharges = sName:match("%p%d+%scharges%p");
+	sCharges = sName:match("%d+%scharges");
 	if sCharges then
-		sCharges = sCharges:match("%d+");
-		if sCharges then
-			if nCharges ~= 0 and nCharges < tonumber(sCharges) then
-				return nCharges;
-			else
-				return tonumber(sCharges);
+		local nNameCharges = tonumber(sCharges:match("%d+"));
+		if (nNameCharges and (nFieldCharges ~= 0)) then
+			if (nFieldCharges < nNameCharges) then
+				return nFieldCharges;
 			end
+		elseif usingEnhancedItems() and (nNameCharges and (nFieldCharges == 0)) then
+			DB.setValue(nodeItem, "charge", 'number', nNameCharges);				-- write charges from name to database node "charge"
+			sName = sName:gsub(sCharges, ''); sName = sName:gsub('%[%]', '');		-- trim charges from name
+			DB.setValue(nodeItem, "name", 'string', StringManager.trim(sName));		-- write trimmed name back to database node "name"
+			return nNameCharges;
+		else
+			return nNameCharges;
 		end
 	end
-	return nCharges;
+	return nFieldCharges;
 end
