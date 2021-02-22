@@ -19,7 +19,5 @@
     <!-- Initialization -->
 	<script name="CharManagerACIM" file="campaign/scripts/manager_char_ACIM.lua" />
     <script name="InvManagerACIM" file="campaign/scripts/char_invlist_ACIM.lua" />
-	
-	<includefile source="campaign/record_item.xml" />
   </base>
 </root>
