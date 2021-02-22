@@ -54,6 +54,7 @@ function onItemChanged(nodeField)
 	end
 end
 
+local bAnnnounced = false
 function inventoryChanged(nodeChar, nodeItem)
 	if nodeChar and nodeItem then
 		--Debug.chat("InventoryChanged", "nodeChar", nodeChar);
@@ -72,6 +73,10 @@ function inventoryChanged(nodeChar, nodeItem)
 		elseif sItemType == "wand" then
 			nUsesAvailable = getWandCharges(nodeItem);
 			if nUsesAvailable == 0 then
+				if not bAnnnounced then
+					ChatManager.SystemMessage(string.format('%s has no remaining charges listed. Please check it for accuracy.', DB.getValue(nodeItem, 'name', 'A wand')))
+					bAnnnounced = true
+				end
 				nUsesAvailable = 50
 			end
 		end
