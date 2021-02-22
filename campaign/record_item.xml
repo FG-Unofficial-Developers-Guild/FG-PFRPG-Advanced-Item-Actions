@@ -9,9 +9,9 @@
 <root>
 	<windowclass name="item_main" merge="join">
 		<script file="campaign/scripts/item_main_ACIM.lua" />
-		<sheetdata>
+		<!-- <sheetdata>
 			<line_column name="divider8" insertbefore="ac_label" />
-		</sheetdata>
+		</sheetdata> -->
 	</windowclass>
 
 </root>
