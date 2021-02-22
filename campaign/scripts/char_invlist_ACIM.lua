@@ -358,7 +358,7 @@ function getCL(nodeItem)
 	local sCL = sName:match("%pCL%s%d+%p");
 	if sCL then
 		local nNameCL = tonumber(sCL:match("%d+"));
-		if usingEnhancedItems() and nNameCL then
+		if nNameCL then
 			DB.setValue(nodeItem, "cl", 'number', nNameCL);							-- write CL from name to database node "cl"
 		end
 		return nNameCL or nCL;
