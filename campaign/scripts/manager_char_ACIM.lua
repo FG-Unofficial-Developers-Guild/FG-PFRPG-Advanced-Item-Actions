@@ -9,9 +9,9 @@ function onCharItemAdd(nodeItem)
 	DB.setValue(nodeItem, "carried", "number", 1);
 	DB.setValue(nodeItem, "showonminisheet", "number", 1);
 
-	if DB.getValue(nodeItem, "type", "") == "Goods and Services" then
-		local sSubType = DB.getValue(nodeItem, "subtype", "");
-		if (sType == "Goods and Services") and StringManager.contains({"Mounts and Related Gear", "Transport", "Spellcasting and Services"}, sSubType) then
+	if string.lower(DB.getValue(nodeItem, "type", "")) == "goods and services" then
+		local sSubType = string.lower(DB.getValue(nodeItem, "subtype", ""));
+		if (sType == "goods and services") and StringManager.contains({"mounts and related gear", "transport", "spellcasting and services"}, sSubType) then
 			DB.setValue(nodeItem, "carried", "number", 0);
 		end
 	end
@@ -42,9 +42,9 @@ function removeFromSpellDB(nodeItem)
 		return;
 	end
 	--Debug.chat("removeFromArmorDB", "nodeItem", nodeItem);
-	local sItemType = DB.getValue(nodeItem, "type");
+	local sItemType = string.lower(DB.getValue(nodeItem, "type", ""));
 	--Debug.chat("removeFromSpellDB", "nodeItem.type", sItemType);
-	if not (sItemType == "Potion" or sItemType == "Wand" or sItemType == "Scroll") then
+	if not (sItemType == "potion" or sItemType == "wand" or sItemType == "scroll") then
 		return
 	end
 	local nodeChar = DB.getChild(nodeItem, "...");
@@ -63,8 +63,8 @@ end
 
 function addToWeaponDB(nodeItem)
 	-- Parameter validation
-	if DB.getValue(nodeItem, "type", "") ~= "Weapon" then
-		if DB.getValue(nodeItem, "subtype") ~= "Shield" then
+	if string.lower(DB.getValue(nodeItem, "type", "")) ~= "weapon" then
+		if string.lower(DB.getValue(nodeItem, "subtype", "")) ~= "shield" then
 			return;
 		elseif DB.getValue(nodeItem, "damage", "") == "" then
 			return;
@@ -397,6 +397,6 @@ function getSpecialProperties(sPropsLower)
 	bIsAcid = (sPropsLower:match("corrosive"));
 	bIsFlaming = (sPropsLower:match("flaming") or sPropsLower:match("igniting"));
 	bIsFrost = (sPropsLower:match("frost") or sPropsLower:match("icy"));
-	bIsShocking = (sPropsLower:match("Shock"));
+	bIsShocking = (sPropsLower:match("shock"));
 	return bIsAcid, bIsFlaming, bIsFrost, bIsShocking;
 end

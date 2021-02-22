@@ -23,13 +23,22 @@ CLASS_NAME_ADEPT = "adept";
 CLASS_NAME_BLACKGUARD = "blackguard";
 CLASS_NAME_ASSASSIN = "assassin";
 
+local function usingKelrugemExt()
+	return (StringManager.contains(Extension.getExtensions(), "Full OverlayPackage") or
+			StringManager.contains(Extension.getExtensions(), "Full OverlayPackage with alternative icons") or
+			StringManager.contains(Extension.getExtensions(), "Full OverlayPackage with other icons"));
+end
+
+local function usingEnhancedItems()
+	return (StringManager.contains(Extension.getExtensions(), "PFRPG - Enhanced Items v4.21") or
+			StringManager.contains(Extension.getExtensions(), "PFRPG - Enhanced Items"));
+end
+
 function onInit()
     DB.addHandler("charsheet.*.inventorylist.*.isidentified", "onUpdate", onItemChanged);
     DB.addHandler("charsheet.*.inventorylist.*.carried", "onUpdate", onItemChanged);
     DB.addHandler("charsheet.*.inventorylist.*.count", "onUpdate", onItemChanged);
-	if StringManager.contains(Extension.getExtensions(), "PFRPG Enhanced Items v4.2") then
-		DB.addHandler("charsheet.*.inventorylist.*.charge", "onUpdate", onItemChanged);
-	end
+	if usingEnhancedItems() then DB.addHandler("charsheet.*.inventorylist.*.charge", "onUpdate", onItemChanged); end
 end
 
 function onItemChanged(nodeField)
@@ -49,8 +58,8 @@ function inventoryChanged(nodeChar, nodeItem)
 	if nodeChar and nodeItem then
 		--Debug.chat("InventoryChanged", "nodeChar", nodeChar);
 		--Debug.chat("InventoryChanged", "nodeItem", nodeItem);
-		local sItemType = DB.getValue(nodeItem, "type");
-		if not (sItemType == "Potion" or sItemType == "Wand" or sItemType == "Scroll") then
+		local sItemType = string.lower(DB.getValue(nodeItem, "type", ""));
+		if not (sItemType == "potion" or sItemType == "wand" or sItemType == "scroll") then
 			return;
 		end
 		if DB.getValue(nodeItem, "isidentified") == 0 then
@@ -59,7 +68,7 @@ function inventoryChanged(nodeChar, nodeItem)
 		local nCL = DB.getValue(nodeItem, "cl", 1);
 		local nUsesAvailable = 0;
 		local sSource = nodeItem.getPath();
-		if sItemType == "Potion" or sItemType == "Scroll" then
+		if sItemType == "potion" or sItemType == "scroll" then
 			nUsesAvailable = nodeItem.getChild("count").getValue();
 		else
 			nUsesAvailable = getWantCharges(nodeItem);
@@ -170,7 +179,7 @@ function removeSpellClass(nodeItem, nodeSpellSet, nSpellLevel)
 			local nodeSpellLevel = DB.getChild(nodeSpellSet, "levels.level" .. nSpellLevel);
 			local nTotalCast = DB.getValue(nodeSpellLevel, "totalcast", 0);
 			local nAvailable = DB.getValue(nodeSpellSet, "availablelevel" .. nSpellLevel, 0);
-			if StringManager.contains(Extension.getExtensions(), "PFRPG Enhanced Items v4.2") then
+			if usingEnhancedItems() then
 				DB.removeHandler("charsheet.*.inventorylist.*.charge", "onUpdate", onItemChanged);
 				if DB.getValue(nodeItem, "charge") ~= (nAvailable - nTotalCast) then
 					DB.setValue(nodeItem, "charge", "number", nAvailable - nTotalCast);

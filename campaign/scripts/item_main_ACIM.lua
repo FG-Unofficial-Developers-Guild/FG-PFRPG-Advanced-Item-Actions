@@ -27,8 +27,8 @@ function update()
 	local bReadOnly = WindowManager.getReadOnlyState(nodeRecord);
 	local bID, bOptionID = ItemManager.getIDState(nodeRecord);
 	
-	local sType = string.lower(type.getValue());
-	local sSubType = string.lower(DB.getValue(nodeRecord, "subtype"));
+	local sType = string.lower(type.getValue() or "");
+	local sSubType = string.lower(DB.getValue(nodeRecord, "subtype", ""));
 	
 	local bWeapon = (string.find(sType, "weapon") ~= nil);
 	local bArmor = (string.find(sType, "armor") ~= nil);
