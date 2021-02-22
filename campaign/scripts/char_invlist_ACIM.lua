@@ -244,6 +244,19 @@ local function addSpell(nodeSource, nodeSpellClass, nLevel)
 	-- Parse spell details to create actions
 	if DB.getChildCount(nodeNewSpell, "actions") == 0 then
 		SpellManager.parseSpell(nodeNewSpell);
+	elseif usingKelrugemExt() then											-- bmos adding Kel's tag parsing
+		local nodeActions = nodeNewSpell.createChild("actions");
+		if nodeActions then
+			local nodeAction = nodeActions.getChildren();
+			if nodeAction then
+				for k, v in pairs(nodeAction) do
+					if DB.getValue(v, "type") == "cast" then
+						SpellManager.addTags(nodeNewSpell, v);
+						DB.setValue(v, 'usereset', 'string', 'consumable')	-- bmos setting spell as consumable (no reset on rest)
+					end
+				end
+			end
+		end
 	end
 	
 	return nodeNewSpell;
