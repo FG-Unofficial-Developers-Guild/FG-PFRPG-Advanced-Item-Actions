@@ -75,7 +75,11 @@ local function getSpellBetweenParenthesis(sItemName)
 	local sSpellName = sItemName:match("%b()");
 	if sSpellName then
 		sSpellName = sSpellName:sub(2,-2);
-		sSpellName = sSpellName:gsub(" ", "");
+		sSpellName = sSpellName:gsub('%A+', '')
+		if string.find(string_spell_name, 'greater') then
+				string_spell_name = string_spell_name:gsub('greater', '') .. 'greater'
+		end
+		
 		return sSpellName:lower();
 	end
 	return "";
