@@ -60,7 +60,7 @@ local function getWandCharges(nodeItem)
 	return nFieldCharges;
 end
 
-local function getSpellSet(nodeChar, sItemSource)
+function getSpellSet(nodeChar, sItemSource)
 	if nodeChar and sItemSource ~= "" then
 		--Debug.chat("getSpellSet", "sItemSource", sItemSource);
 		for _,nodeSpellSet in pairs(DB.getChildren(nodeChar, "spellset")) do
@@ -320,7 +320,7 @@ local function getCL(nodeItem)
 end
 
 local bAnnnounced = false
-local function inventoryChanged(nodeChar, nodeItem)
+function inventoryChanged(nodeChar, nodeItem)
 	if nodeChar and nodeItem then
 		--Debug.chat("InventoryChanged", "nodeChar", nodeChar);
 		--Debug.chat("InventoryChanged", "nodeItem", nodeItem);
