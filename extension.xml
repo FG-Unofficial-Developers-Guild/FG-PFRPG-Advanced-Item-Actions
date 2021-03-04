@@ -2,7 +2,7 @@
 <root version="3.3.9" release="1">
   <properties>
     <name>Advanced Character Inventory Manager for 3.5E and Pathfinder</name>
-    <version>1.1</version>
+    <version>1.2</version>
 	<loadorder>60</loadorder>
     <author>rmilmine</author>
     <description>Takes items added to inventory and adds them to the action tab.</description>
@@ -14,7 +14,7 @@
     </ruleset>
 	<loadorder>25</loadorder>
   </properties>
-    <announcement text="Advanced Character Inventory Manager V1.1.\nFor Fantasy Grounds 3.3.11+ and 3.5E and Pathfinder rulesets.\nBy rmilmine. With help from bmos" font="emotefont" />
+    <announcement text="Advanced Character Inventory Manager V1.2\nFor Fantasy Grounds 3.3.11+ and 3.5E and Pathfinder rulesets.\nBy rmilmine. With help from bmos" font="emotefont" />
   <base>
     <!-- Initialization -->
 	<script name="CharManagerACIM" file="campaign/scripts/manager_char_ACIM.lua" />
