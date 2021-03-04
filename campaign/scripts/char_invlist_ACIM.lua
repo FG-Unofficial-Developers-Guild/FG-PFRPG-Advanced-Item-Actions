@@ -71,42 +71,55 @@ function getSpellSet(nodeChar, sItemSource)
 	end
 end
 
-local function getSpellBetweenParenthesis(sItemName)
-	local sSpellName = sItemName:match("%b()");
-	if sSpellName then
-		sSpellName = sSpellName:sub(2,-2);
-		sSpellName = sSpellName:gsub('%A+', '')
-		if string.find(string_spell_name, 'greater') then
-				string_spell_name = string_spell_name:gsub('greater', '') .. 'greater'
-		end
-		
-		return sSpellName:lower();
+local function trim_spell_name(string_spell_name)
+	local number_name_end = string.find(string_spell_name, '%(')
+	string_spell_name = string_spell_name:sub(1, number_name_end)
+	string_spell_name = string_spell_name:gsub('APG', '')
+	string_spell_name = string_spell_name:gsub('ARG', '')
+	string_spell_name = string_spell_name:gsub('UM', '')
+	string_spell_name = string_spell_name:gsub('.+:', '')
+	string_spell_name = string_spell_name:gsub(',.+', '')
+	string_spell_name = string_spell_name:gsub('%[%a%]', '')
+	string_spell_name = string_spell_name:gsub('%A+', '')
+	string_spell_name = string.lower(StringManager.trim(string_spell_name))
+	if string.find(string_spell_name, 'greater') then
+			string_spell_name = string_spell_name:gsub('greater', '') .. 'greater'
 	end
-	return "";
+
+	return string_spell_name
+end
+
+local function getSpellBetweenParenthesis(sItemName)
+	local string_spell_name = sItemName:match("%b()");
+	if string_spell_name then
+		string_spell_name = string_spell_name:sub(2,-2);
+		string_spell_name = trim_spell_name(string_spell_name)
+		
+		return string_spell_name
+	end
+	return ""
 end
 
 local function getSpellAfterOf(sItemName)
 	local i, j = sItemName:find("of ");
 	if j ~= nil then
-		local sSpellName = sItemName:sub(j);
-		sSpellName = sSpellName:gsub(" ", "");
-		sSpellName = sSpellName:match("%a+");
-		return sSpellName:lower();
+		local string_spell_name = sItemName:sub(j);
+		string_spell_name = trim_spell_name(string_spell_name)
+
+		return string_spell_name
 	end
-	return "";
+	return ""
 end
 
 local function getSpellFromItemName(sItemName)
 	local nodeSpell = nil;
 	if sItemName ~= "" then
 		local sSpellName = getSpellBetweenParenthesis(sItemName);
-		sSpellName = sSpellName:gsub('%p', '')
 		if sSpellName ~= "" then
 			nodeSpell = DB.findNode("spelldesc." .. sSpellName .."@*");
 			if not nodeSpell then nodeSpell = DB.findNode("reference.spells." .. sSpellName .. "@*") end
 			if not nodeSpell then
 				sSpellName = getSpellAfterOf(sItemName);
-				sSpellName = sSpellName:gsub('%p', '')
 				if sSpellName ~= "" then
 					nodeSpell = DB.findNode("spelldesc." .. sSpellName .."@*");
 					if not nodeSpell then nodeSpell = DB.findNode("reference.spells." .. sSpellName .. "@*") end
@@ -117,7 +130,6 @@ local function getSpellFromItemName(sItemName)
 			end
 		else
 			local sSpellName = getSpellAfterOf(sItemName);
-			sSpellName = sSpellName:gsub('%p', '')
 			if sSpellName ~= "" then
 				nodeSpell = DB.findNode("spelldesc." .. sSpellName .."@*");
 				if not nodeSpell then nodeSpell = DB.findNode("reference.spells." .. sSpellName .. "@*") end
