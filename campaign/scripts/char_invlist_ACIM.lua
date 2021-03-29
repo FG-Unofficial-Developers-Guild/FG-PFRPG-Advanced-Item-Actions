@@ -112,7 +112,6 @@ local function getSpellBetweenParenthesis(sItemName)
 		
 		return string_spell_name
 	end
-	return ""
 end
 
 local function getSpellAfterOf(sItemName)
@@ -123,32 +122,30 @@ local function getSpellAfterOf(sItemName)
 
 		return string_spell_name
 	end
-	return ""
+end
+
+local function findSpellNode(sSpellName)
+	return (DB.findNode("spelldesc." .. sSpellName .."@*")
+			or DB.findNode("spell." .. sSpellName .. "@*")
+			or DB.findNode("reference.spells." .. sSpellName .. "@*")
 end
 
 local function getSpellFromItemName(sItemName)
-	local nodeSpell = nil;
-	if sItemName ~= "" then
+	if sItemName and sItemName ~= "" then
 		local sSpellName = getSpellBetweenParenthesis(sItemName);
-		if sSpellName ~= "" then
-			nodeSpell = DB.findNode("spelldesc." .. sSpellName .."@*");
-			if not nodeSpell then nodeSpell = DB.findNode("reference.spells." .. sSpellName .. "@*") end
+		if sSpellName then
+			local nodeSpell = findSpellNode(sSpellName);
 			if not nodeSpell then
 				sSpellName = getSpellAfterOf(sItemName);
-				if sSpellName ~= "" then
-					nodeSpell = DB.findNode("spelldesc." .. sSpellName .."@*");
-					if not nodeSpell then nodeSpell = DB.findNode("reference.spells." .. sSpellName .. "@*") end
-					return nodeSpell;
+				if sSpellName then
+					nodeSpell = findSpellNode(sSpellName);
 				end
-			else
-				return nodeSpell;
 			end
+			return nodeSpell;
 		else
 			local sSpellName = getSpellAfterOf(sItemName);
-			if sSpellName ~= "" then
-				nodeSpell = DB.findNode("spelldesc." .. sSpellName .."@*");
-				if not nodeSpell then nodeSpell = DB.findNode("reference.spells." .. sSpellName .. "@*") end
-				return nodeSpell;
+			if sSpellName then
+				return findSpellNode(sSpellName);
 			end
 		end
 	end
