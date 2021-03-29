@@ -132,7 +132,7 @@ end
 local function findSpellNode(sSpellName)
 	return (DB.findNode("spelldesc." .. sSpellName .."@*")
 			or DB.findNode("spell." .. sSpellName .. "@*")
-			or DB.findNode("reference.spells." .. sSpellName .. "@*")
+			or DB.findNode("reference.spells." .. sSpellName .. "@*"));
 end
 
 local function getSpellFromItemName(sItemName)
