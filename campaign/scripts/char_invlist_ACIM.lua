@@ -130,9 +130,12 @@ local function getSpellAfterOf(sItemName)
 end
 
 local function findSpellNode(sSpellName)
-	return (DB.findNode("spelldesc." .. sSpellName .."@*")
-			or DB.findNode("spell." .. sSpellName .. "@*")
-			or DB.findNode("reference.spells." .. sSpellName .. "@*"));
+	return (DB.findNode("spelldesc." .. sSpellName .."@*") or
+			DB.findNode("spelldesc.category." .. sSpellName .."@*") or
+			DB.findNode("spell." .. sSpellName .. "@*") or
+			DB.findNode("spell.category." .. sSpellName .. "@*") or
+			DB.findNode("reference.spells." .. sSpellName .. "@*") or
+			DB.findNode("reference.spells.category." .. sSpellName .. "@*"));
 end
 
 local function getSpellFromItemName(sItemName)
