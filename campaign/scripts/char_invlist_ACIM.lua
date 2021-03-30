@@ -371,7 +371,7 @@ function inventoryChanged(nodeChar, nodeItem)
 			nUsesAvailable = getWandCharges(nodeItem);
 			if nUsesAvailable == 0 then
 				if not bAnnnounced then
-					ChatManager.SystemMessage(string.format('%s has no remaining charges listed. Please check it for accuracy.', DB.getValue(nodeItem, 'name', 'A wand')))
+					ChatManager.SystemMessage(string.format('%s has no remaining charges listed. Please check it for accuracy.', DB.getValue(nodeItem, 'name', 'This wand')))
 					bAnnnounced = true
 				end
 				nUsesAvailable = 50
