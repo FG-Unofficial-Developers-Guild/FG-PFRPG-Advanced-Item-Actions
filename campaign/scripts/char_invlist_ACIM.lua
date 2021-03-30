@@ -354,7 +354,10 @@ function inventoryChanged(nodeChar, nodeItem)
 		--Debug.chat("InventoryChanged", "nodeChar", nodeChar);
 		--Debug.chat("InventoryChanged", "nodeItem", nodeItem);
 		local sItemType = string.lower(DB.getValue(nodeItem, "type", ""));
-		if not (sItemType == "potion" or sItemType == "wand" or sItemType == "scroll") then
+		local bisPotion = sItemType:match("potion")
+		local bisWand = sItemType:match("wand")
+		local bisScroll = sItemType:match("scroll")
+		if not (bisPotion or bisWand or bisScroll) then
 			return;
 		end
 		if DB.getValue(nodeItem, "isidentified") == 0 then
@@ -362,9 +365,9 @@ function inventoryChanged(nodeChar, nodeItem)
 		end
 		local nUsesAvailable = 0;
 		local sSource = nodeItem.getPath();
-		if sItemType == "potion" or sItemType == "scroll" then
+		if bisPotion or bisScroll then
 			nUsesAvailable = nodeItem.getChild("count").getValue();
-		elseif sItemType == "wand" then
+		elseif bisWand then
 			nUsesAvailable = getWandCharges(nodeItem);
 			if nUsesAvailable == 0 then
 				if not bAnnnounced then
