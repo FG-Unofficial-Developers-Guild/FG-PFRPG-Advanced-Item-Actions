@@ -253,14 +253,14 @@ local function addSpell(nodeSource, nodeSpellClass, nLevel)
 	-- Parse spell details to create actions
 	if DB.getChildCount(nodeNewSpell, "actions") == 0 then
 		SpellManager.parseSpell(nodeNewSpell);
-	elseif usingKelrugemExt() then											-- bmos adding Kel's tag parsing
-		local nodeActions = nodeNewSpell.createChild("actions");
+	else -- bmos adding Kel's tag parsing
+		local nodeActions = nodeNewSpell.getChild("actions");
 		if nodeActions then
 			local nodeAction = nodeActions.getChildren();
 			if nodeAction then
 				for k, v in pairs(nodeAction) do
 					if DB.getValue(v, "type") == "cast" then
-						SpellManager.addTags(nodeNewSpell, v);
+						if usingKelrugemExt() then SpellManager.addTags(nodeNewSpell, v) end
 						DB.setValue(v, 'usereset', 'string', 'consumable')	-- bmos setting spell as consumable (no reset on rest)
 					end
 				end
@@ -295,12 +295,9 @@ local function addSpellToActionList(nodeChar, nodeSpell, sDisplayName, nUsesAvai
 		local nodeNew = addSpell(nodeSpell, nodeNewSpellClass, nSpellLevel);
 		--Debug.chat("addActionItem", "nodeNew", nodeNew);
 		if nodeNew then
-			if StringManager.contains(Extension.getExtensions(), "Save versus tags") then
-				for _,nodeAction in pairs(DB.getChildren(nodeNew, "actions")) do
-					if DB.getValue(nodeAction, "type", "") == "cast" then
-						nodeAction.createChild("usereset", "string");
-						nodeAction.getChild("usereset").setValue("consumable");
-					end
+			for _,nodeAction in pairs(DB.getChildren(nodeNew, "actions")) do
+				if DB.getValue(nodeAction, "type", "") == "cast" then
+					DB.setValue(nodeAction, "usereset", "string", "consumable");
 				end
 			end
 		end
@@ -368,7 +365,7 @@ local function getCL(nodeItem)
 	if sCL then
 		local nNameCL = tonumber(sCL:match("%d+"));
 		if nNameCL then
-			DB.setValue(nodeItem, "cl", 'number', nNameCL);							-- write CL from name to database node "cl"
+			DB.setValue(nodeItem, "cl", 'number', nNameCL);	-- write CL from name to database node "cl"
 		end
 		return nNameCL or nCL;
 	end
