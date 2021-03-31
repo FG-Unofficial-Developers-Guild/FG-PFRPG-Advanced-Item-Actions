@@ -72,8 +72,8 @@ function getSpellSet(nodeChar, sItemSource)
 end
 
 local function trim_spell_name(string_spell_name)
-	local is_greater = string.find(string_spell_name, 'greater')
-	local is_lesser = string.find(string_spell_name, 'lesser')
+	local is_greater = string.find(string_spell_name:lower(), 'greater')
+	local is_lesser = string.find(string_spell_name:lower(), 'lesser')
 	
 	-- remove anything after open parentheses
 	local number_name_end = string.find(string_spell_name, '%(')
