@@ -72,10 +72,13 @@ function getSpellSet(nodeChar, sItemSource)
 end
 
 local function trim_spell_name(string_spell_name)
-	local is_greater = string.find(string_spell_name:lower(), ', greater')
-	local is_lesser = string.find(string_spell_name:lower(), ', lesser')
-	local is_communal = string.find(string_spell_name:lower(), ', communal')
-	local is_mass = string.find(string_spell_name:lower(), ', mass')
+	local is_greater = (string.find(string_spell_name:lower(), ', greater') ~= nil)
+	local is_lesser = (string.find(string_spell_name:lower(), ', lesser') ~= nil)
+	local is_communal = (string.find(string_spell_name:lower(), ', communal') ~= nil)
+	local is_mass = (string.find(string_spell_name:lower(), ', mass') ~= nil)
+	local is_maximized = (string.find(string_spell_name:lower(), 'maximized') ~= nil)
+	local is_empowered = (string.find(string_spell_name:lower(), 'empowered') ~= nil)
+	local is_quickened = (string.find(string_spell_name:lower(), 'quickened') ~= nil)
 
 	-- remove tags from spell name
 	if is_greater then
@@ -93,6 +96,18 @@ local function trim_spell_name(string_spell_name)
 	if is_mass then
 		string_spell_name = string_spell_name:gsub(', mass', '')
 		string_spell_name = string_spell_name:gsub(', Mass', '')
+	end
+	if is_maximized then
+		string_spell_name = string_spell_name:gsub('maximized', '')
+		string_spell_name = string_spell_name:gsub('Maximized', '')
+	end
+	if is_empowered then
+		string_spell_name = string_spell_name:gsub('empowered', '')
+		string_spell_name = string_spell_name:gsub('Empowered', '')
+	end
+	if is_quickened then
+		string_spell_name = string_spell_name:gsub('quickened', '')
+		string_spell_name = string_spell_name:gsub('Quickened', '')
 	end
 
 	-- remove anything after open parentheses
