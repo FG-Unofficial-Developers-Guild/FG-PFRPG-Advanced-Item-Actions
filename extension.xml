@@ -2,7 +2,7 @@
 <root version="3.3.9" release="1">
 	<properties>
 		<name>Advanced Character Inventory Manager for 3.5E and Pathfinder</name>
-		<version>1.3</version>
+		<version>1.4</version>
 		<loadorder>60</loadorder>
 		<author>rmilmine and bmos</author>
 		<description>Takes consumables added to inventory and adds them to the action tab.</description>
@@ -15,7 +15,7 @@
 		<loadorder>25</loadorder>
 	</properties>
   
-	<announcement text="Advanced Character Inventory Manager v1.3\nThis extension takes consumables added to inventory and adds them to the action tab." font="emotefont" />
+	<announcement text="Advanced Character Inventory Manager v1.4\nThis extension takes consumables added to inventory and adds them to the action tab." font="emotefont" />
 	
 	<base>
 		<!-- Initialization -->
