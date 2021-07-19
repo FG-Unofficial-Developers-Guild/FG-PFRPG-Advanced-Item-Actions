@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root version="3.3.9" release="1">
 	<properties>
-		<name>Advanced Item Actions</name>
+		<name>Feature: Advanced Item Actions</name>
 		<version>1.4</version>
 		<loadorder>60</loadorder>
 		<author>rmilmine and bmos</author>
