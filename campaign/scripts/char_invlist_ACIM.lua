@@ -24,12 +24,13 @@ local CLASS_NAME_BLACKGUARD = "blackguard";
 local CLASS_NAME_ASSASSIN = "assassin";
 
 local function usingKelrugemExt()
-	return (StringManager.contains(Extension.getExtensions(), "Feature: Extended automation and alternative overlays") or
-			StringManager.contains(Extension.getExtensions(), "Feature: Extended automation and overlays"));
+	return (StringManager.contains(Extension.getExtensions(), "Full OverlayPackage") or
+			StringManager.contains(Extension.getExtensions(), "Full OverlayPackage with alternative icons") or
+			StringManager.contains(Extension.getExtensions(), "Full OverlayPackage with other icons"));
 end
 
 local function usingEnhancedItems()
-	return StringManager.contains(Extension.getExtensions(), "Feature: Enhanced Items");
+	return StringManager.contains(Extension.getExtensions(), "FG-PFRPG-Enhanced-Items");
 end
 
 local function getWandCharges(nodeItem)
