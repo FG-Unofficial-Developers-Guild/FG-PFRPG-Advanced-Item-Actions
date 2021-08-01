@@ -2,7 +2,7 @@
 <root version="3.3.9" release="1">
 	<properties>
 		<name>Feature: Advanced Item Actions</name>
-		<version>1.4</version>
+		<version>1.5</version>
 		<loadorder>60</loadorder>
 		<author>rmilmine and bmos</author>
 		<description>This extension takes consumables equipped in the inventory and adds them to the action tab.</description>
@@ -15,7 +15,7 @@
 		<loadorder>25</loadorder>
 	</properties>
   
-	<announcement text="Advanced Item Actions v1.4\nThis extension takes consumables equipped in the inventory and adds them to the action tab." font="emotefont" />
+	<announcement text="Advanced Item Actions v1.5\nThis extension takes consumables equipped in the inventory and adds them to the action tab." font="emotefont" />
 	
 	<base>
 		<!-- Initialization -->
