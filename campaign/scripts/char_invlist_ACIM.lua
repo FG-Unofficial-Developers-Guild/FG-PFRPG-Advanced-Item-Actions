@@ -179,8 +179,10 @@ local function findSpellNode(sSpellName)
 end
 
 local function getSpellFromItemName(sItemName)
+	-- Debug.chat("getSpellFromItemName", sItemName);
 	if sItemName and sItemName ~= "" then
 		local sSpellName = getSpellBetweenParenthesis(sItemName);
+		-- Debug.chat("getSpellFromItemName.sSpellName.()", sSpellName);
 		if sSpellName then
 			local nodeSpell = findSpellNode(sSpellName);
 			if not nodeSpell then
@@ -192,6 +194,7 @@ local function getSpellFromItemName(sItemName)
 			return nodeSpell;
 		else
 			local sSpellName = getSpellAfterOf(sItemName);
+			-- Debug.chat("getSpellFromItemName.sSpellName.of", sSpellName);
 			if sSpellName then
 				return findSpellNode(sSpellName);
 			end
@@ -391,8 +394,8 @@ end
 local bAnnnounced = false
 function inventoryChanged(nodeChar, nodeItem)
 	if nodeChar and nodeItem then
-		--Debug.chat("InventoryChanged", "nodeChar", nodeChar);
-		--Debug.chat("InventoryChanged", "nodeItem", nodeItem);
+		-- Debug.chat("InventoryChanged", "nodeChar", nodeChar);
+		-- Debug.chat("InventoryChanged", "nodeItem", nodeItem);
 		local sItemType = string.lower(DB.getValue(nodeItem, "type", ""));
 		local bisPotion = sItemType:match("potion")
 		local bisWand = sItemType:match("wand")
@@ -418,22 +421,21 @@ function inventoryChanged(nodeChar, nodeItem)
 			end
 		end
 		local sItemName = nodeItem.getChild("name").getValue();
-		local nodeSpellSet = getSpellSet(nodeChar, nodeItem.getPath());
-		--Debug.chat("inventoryChanged", "nodeSpellSet", nodeSpellSet);
-		--Debug.chat("inventoryChanged", "nodeSpellClass", nodeSpellClass);
-		--Debug.chat("inventoryChanged", "nodeItem.carried", nodeItem.getChild("carried").getValue());
 		local nodeSpell = getSpellFromItemName(sItemName);
+		--Debug.chat("inventoryChanged", "nodeSpell", nodeSpell);
 		if not nodeSpell then
 			return;
 		end
-		--Debug.chat("inventoryChanged", "nodeSpell", nodeSpell);
 		local nSpellLevel, nMinCasterLevel = getSpellLevel(nodeSpell);
 		local nCL = getCL(nodeItem);
 		if nCL < nMinCasterLevel then
 			nCL = nMinCasterLevel;
 		end;
 		--Debug.chat("inventoryChanged", "nSpellLevel", nSpellLevel);
+		local nodeSpellSet = getSpellSet(nodeChar, nodeItem.getPath());
+		-- Debug.chat("inventoryChanged", "nodeSpellSet", nodeSpellSet);
 		local nCarried = DB.getValue(nodeItem, "carried", 1)
+		-- Debug.chat("inventoryChanged", "nCarried", nCarried);
 		if nCarried ~= 2 then
 			if nodeSpellSet then
 				removeSpellClass(nodeItem, nodeSpellSet, nSpellLevel);
