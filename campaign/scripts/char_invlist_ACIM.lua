@@ -159,6 +159,7 @@ local function getSpellBetweenParenthesis(sItemName)
 end
 
 local function getSpellAfterOf(sItemName)
+	local sItemName = sItemName:gsub('%[.+%]', '')
 	local i, j = sItemName:find("of ");
 	if j ~= nil then
 		local string_spell_name = sItemName:sub(j);
