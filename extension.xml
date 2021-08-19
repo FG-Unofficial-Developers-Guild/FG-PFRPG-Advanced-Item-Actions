@@ -15,7 +15,7 @@
 		<loadorder>25</loadorder>
 	</properties>
   
-	<announcement text="Advanced Item Actions v1.6\nThis extension takes consumables equipped in the inventory and adds them to the action tab." font="emotefont" />
+	<announcement text="https://www.fantasygrounds.com/forums/showthread.php?57819-Advanced-Character-Iventory-Manager-for-3-5E-and-Pathfinder\rAdvanced Item Actions v1.6\rThis extension takes consumables equipped in the inventory and adds them to the action tab." font="emotefont" />
 	
 	<base>
 		<!-- Initialization -->
