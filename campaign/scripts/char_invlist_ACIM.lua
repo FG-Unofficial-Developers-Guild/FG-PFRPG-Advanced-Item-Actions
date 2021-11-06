@@ -63,6 +63,7 @@ function getSpellSet(nodeChar, sItemSource)
 	if nodeChar and sItemSource ~= "" then
 		-- Debug.chat("getSpellSet", "sItemSource", sItemSource);
 		for _,nodeSpellSet in pairs(DB.getChildren(nodeChar, "spellset")) do
+			-- Debug.chat(sItemSource, nodeSpellSet);
 			if DB.getValue(nodeSpellSet, "source_name") == sItemSource then
 				return nodeSpellSet;
 			end
