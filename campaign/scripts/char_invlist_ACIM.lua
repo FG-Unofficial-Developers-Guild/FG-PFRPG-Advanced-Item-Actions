@@ -206,7 +206,7 @@ end
 local function removeSpellClass(nodeItem, nodeSpellSet, nSpellLevel)
 	if nodeItem and nodeSpellSet and nSpellLevel then
 		local sItemType = string.lower(DB.getValue(nodeItem, "type"));
-		if sItemType == "wand" then
+		if sItemType:match("wand") then
 			local nodeSpellLevel = DB.getChild(nodeSpellSet, "levels.level" .. nSpellLevel);
 			local nTotalCast = DB.getValue(nodeSpellLevel, "totalcast", 0);
 			local nAvailable = DB.getValue(nodeSpellSet, "availablelevel" .. nSpellLevel, 0);
