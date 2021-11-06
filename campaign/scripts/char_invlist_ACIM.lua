@@ -61,7 +61,7 @@ end
 
 function getSpellSet(nodeChar, sItemSource)
 	if nodeChar and sItemSource ~= "" then
-		--Debug.chat("getSpellSet", "sItemSource", sItemSource);
+		-- Debug.chat("getSpellSet", "sItemSource", sItemSource);
 		for _,nodeSpellSet in pairs(DB.getChildren(nodeChar, "spellset")) do
 			if DB.getValue(nodeSpellSet, "source_name") == sItemSource then
 				return nodeSpellSet;
@@ -296,8 +296,8 @@ local function addSpellToActionList(nodeChar, nodeSpell, sDisplayName, nUsesAvai
 		return;
 	end
 	local nodeNewSpellClass = nodeSpellSet.createChild();
-	--Debug.chat("addActionItem", "nodeSpellSet", nodeSpellSet);
-	--Debug.chat("addActionItem", "nodeNewSpellClass", nodeNewSpellClass);
+	-- Debug.chat("addActionItem", "nodeSpellSet", nodeSpellSet);
+	-- Debug.chat("addActionItem", "nodeNewSpellClass", nodeNewSpellClass);
 	if nodeNewSpellClass then
 		DB.setValue(nodeNewSpellClass, "label", "string", sDisplayName);
 		DB.setValue(nodeNewSpellClass, "castertype", "string", "spontaneous");
@@ -305,11 +305,11 @@ local function addSpellToActionList(nodeChar, nodeSpell, sDisplayName, nUsesAvai
 		DB.setValue(nodeNewSpellClass, "source_name", "string", sItemSource);
 		DB.setValue(nodeNewSpellClass, "cl", "number", nCL);
 		DB.setValue(nodeChar, "spellmode", "string", "standard");
-		--Debug.chat("addActionItem", "nodeSpell", nodeSpell);
-		--Debug.chat("addActionItem", "nodeNewSpellClass", nodeNewSpellClass);
-		--Debug.chat("addActionItem", "nSpellLevel", nSpellLevel);
+		-- Debug.chat("addActionItem", "nodeSpell", nodeSpell);
+		-- Debug.chat("addActionItem", "nodeNewSpellClass", nodeNewSpellClass);
+		-- Debug.chat("addActionItem", "nSpellLevel", nSpellLevel);
 		local nodeNew = addSpell(nodeSpell, nodeNewSpellClass, nSpellLevel);
-		--Debug.chat("addActionItem", "nodeNew", nodeNew);
+		-- Debug.chat("addActionItem", "nodeNew", nodeNew);
 		if nodeNew then
 			for _,nodeAction in pairs(DB.getChildren(nodeNew, "actions")) do
 				if DB.getValue(nodeAction, "type", "") == "cast" then
@@ -326,7 +326,7 @@ local function getCasterLevelByClass(sClassName, sSpellClassLevel)
 		return 1;
 	end
 	local sLowerClassName = sClassName:lower();
-	--Debug.chat(sLowerClassName);
+	-- Debug.chat(sLowerClassName);
 	if StringManager.contains({CLASS_NAME_ALCHEMIST, CLASS_NAME_ANTIPALADIN, CLASS_NAME_BARD, CLASS_NAME_BLOODRAGER, CLASS_NAME_HUNTER, CLASS_NAME_INQUISITOR, CLASS_NAME_MAGUS, CLASS_NAME_PALADIN, CLASS_NAME_RANGER, CLASS_NAME_SKALD, CLASS_NAME_SUMMONER, CLASS_NAME_WARPRIEST}, sLowerClassName) then
 		return (tonumber(sSpellClassLevel)-1) * 3 + 1;
 	elseif StringManager.contains({CLASS_NAME_ARCHANIST, CLASS_NAME_ORACLE, CLASS_NAME_SORCERER}, sLowerClassName) then
@@ -355,8 +355,8 @@ local function getSpellLevel(nodeSpell)
 			if sComboClassName then
 				local aClassChoices = StringManager.split(sComboClassName, "/", true);
 				for _,sClassChoice in ipairs(aClassChoices) do
-					--Debug.chat("getSpellLevel", "sClassChoice", sClassChoice);
-					--Debug.chat("getSpellLevel", "sSpellClassLevel", sSpellClassLevel);
+					-- Debug.chat("getSpellLevel", "sClassChoice", sClassChoice);
+					-- Debug.chat("getSpellLevel", "sSpellClassLevel", sSpellClassLevel);
 					local nCasterLevel = getCasterLevelByClass(sClassChoice, sSpellClassLevel);
 					if nCasterLevel ~= nil and (nLowestCasterLevel == 0 or nCasterLevel < nLowestCasterLevel) then
 						nLowestCasterLevel = nCasterLevel;
@@ -366,8 +366,8 @@ local function getSpellLevel(nodeSpell)
 			end
 		end
 	end
-	--Debug.chat("getSpellLevel", "nSpellLevel", nSpellLevel);
-	--Debug.chat("getSpellLevel", "nLowestCasterLevel", nLowestCasterLevel);
+	-- Debug.chat("getSpellLevel", "nSpellLevel", nSpellLevel);
+	-- Debug.chat("getSpellLevel", "nLowestCasterLevel", nLowestCasterLevel);
 	return nSpellLevel, nLowestCasterLevel;
 end
 
@@ -392,7 +392,6 @@ local bAnnnounced = false
 function inventoryChanged(nodeChar, nodeItem)
 	if nodeChar and nodeItem then
 		-- Debug.chat("InventoryChanged", "nodeChar", nodeChar);
-		-- Debug.chat("InventoryChanged", "nodeItem", nodeItem);
 		local sItemType = string.lower(DB.getValue(nodeItem, "type", ""));
 		local bisPotion = sItemType:match("potion")
 		local bisWand = sItemType:match("wand")
