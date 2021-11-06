@@ -180,19 +180,21 @@ local function getSpellFromItemName(sItemName)
 	-- Debug.chat("getSpellFromItemName", sItemName);
 	if sItemName and sItemName ~= "" then
 		local sSpellName = getSpellBetweenParenthesis(sItemName);
-		-- Debug.chat("getSpellFromItemName.sSpellName.()", sSpellName);
+		-- Debug.chat("getSpellFromItemName.getSpellBetweenParenthesis", sSpellName);
 		if sSpellName then
 			local nodeSpell = findSpellNode(sSpellName);
 			if not nodeSpell then
 				sSpellName = getSpellAfterOf(sItemName);
+				-- Debug.chat("getSpellFromItemName.getSpellAfterOf", sSpellName);
 				if sSpellName then
 					nodeSpell = findSpellNode(sSpellName);
 				end
 			end
+			-- Debug.chat("getSpellFromItemName.nodeSpell", nodeSpell);
 			return nodeSpell;
 		else
 			local sSpellName = getSpellAfterOf(sItemName);
-			-- Debug.chat("getSpellFromItemName.sSpellName.of", sSpellName);
+			-- Debug.chat("getSpellFromItemName.getSpellAfterOf", sSpellName);
 			if sSpellName then
 				return findSpellNode(sSpellName);
 			end
@@ -424,11 +426,11 @@ function inventoryChanged(nodeChar, nodeItem)
 			return;
 		end
 		local nSpellLevel, nMinCasterLevel = getSpellLevel(nodeSpell);
+		-- Debug.chat("inventoryChanged", "nSpellLevel", nSpellLevel);
 		local nCL = getCL(nodeItem);
 		if nCL < nMinCasterLevel then
 			nCL = nMinCasterLevel;
 		end;
-		-- Debug.chat("inventoryChanged", "nSpellLevel", nSpellLevel);
 		local nodeSpellSet = getSpellSet(nodeChar, nodeItem.getPath());
 		-- Debug.chat("inventoryChanged", "nodeSpellSet", nodeSpellSet);
 		local nCarried = DB.getValue(nodeItem, "carried", 1)
