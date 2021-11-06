@@ -450,7 +450,7 @@ end
 function onItemChanged(nodeField)
 	local nodeChar = DB.getChild(nodeField, "....");
 	if nodeChar then
-		local nodeItem = DB.getChild(nodeField, "..");
+		local nodeItem = nodeField.getParent();
 		if nodeItem then
 			inventoryChanged(nodeChar, nodeItem);
 		end
@@ -462,4 +462,11 @@ function onInit()
     DB.addHandler("charsheet.*.inventorylist.*.carried", "onUpdate", onItemChanged);
     DB.addHandler("charsheet.*.inventorylist.*.count", "onUpdate", onItemChanged);
 	if usingEnhancedItems() then DB.addHandler("charsheet.*.inventorylist.*.charge", "onUpdate", onItemChanged); end
+end
+
+function onClose()
+    DB.removeHandler("charsheet.*.inventorylist.*.isidentified", "onUpdate", onItemChanged);
+    DB.removeHandler("charsheet.*.inventorylist.*.carried", "onUpdate", onItemChanged);
+    DB.removeHandler("charsheet.*.inventorylist.*.count", "onUpdate", onItemChanged);
+	if usingEnhancedItems() then DB.removeHandler("charsheet.*.inventorylist.*.charge", "onUpdate", onItemChanged); end
 end
