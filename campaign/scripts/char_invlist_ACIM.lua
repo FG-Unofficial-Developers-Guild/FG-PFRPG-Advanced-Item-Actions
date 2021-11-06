@@ -419,7 +419,7 @@ function inventoryChanged(nodeChar, nodeItem)
 		end
 		local sItemName = nodeItem.getChild("name").getValue();
 		local nodeSpell = getSpellFromItemName(sItemName);
-		--Debug.chat("inventoryChanged", "nodeSpell", nodeSpell);
+		-- Debug.chat("inventoryChanged", "nodeSpell", nodeSpell);
 		if not nodeSpell then
 			return;
 		end
@@ -428,7 +428,7 @@ function inventoryChanged(nodeChar, nodeItem)
 		if nCL < nMinCasterLevel then
 			nCL = nMinCasterLevel;
 		end;
-		--Debug.chat("inventoryChanged", "nSpellLevel", nSpellLevel);
+		-- Debug.chat("inventoryChanged", "nSpellLevel", nSpellLevel);
 		local nodeSpellSet = getSpellSet(nodeChar, nodeItem.getPath());
 		-- Debug.chat("inventoryChanged", "nodeSpellSet", nodeSpellSet);
 		local nCarried = DB.getValue(nodeItem, "carried", 1)
