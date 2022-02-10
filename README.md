@@ -10,3 +10,6 @@ Shields also have the ability to do damage as well as have ac associated with th
 If the item is a weapon and and has flaming, flaming burst, igniting, frost, icy burst, corrosive, corrosive burst, shock and shocking burst in the properties it will generate the 1d6 damage as part of the weapon.
 
 Originally created by [rmilmine](https://www.fantasygrounds.com/forums/member.php?215591-rmilmine).
+
+# Compatibility
+This extension has been tested with [FantasyGrounds Unity](https://www.fantasygrounds.com/home/FantasyGroundsUnity.php) 4.1.13 (2022-01-05).
