@@ -23,14 +23,6 @@ local CLASS_NAME_ADEPT = "adept";
 local CLASS_NAME_BLACKGUARD = "blackguard";
 local CLASS_NAME_ASSASSIN = "assassin";
 
-local function usingKelrugemExt()
-	return (StringManager.contains(Extension.getExtensions(), "Full OverlayPackage") or
-			StringManager.contains(Extension.getExtensions(), "Full OverlayPackage with alternative icons") or
-			StringManager.contains(Extension.getExtensions(), "Full OverlayPackage with other icons") or
-			StringManager.contains(Extension.getExtensions(), "StrainInjury with Full OverlayPackage") or
-			StringManager.contains(Extension.getExtensions(), "StrainInjury with Full OverlayPackage with new icons"));
-end
-
 local function usingEnhancedItems()
 	return StringManager.contains(Extension.getExtensions(), "FG-PFRPG-Enhanced-Items");
 end
@@ -281,7 +273,7 @@ local function addSpell(nodeSource, nodeSpellClass, nLevel)
 			if nodeAction then
 				for k, v in pairs(nodeAction) do
 					if DB.getValue(v, "type") == "cast" then
-						if usingKelrugemExt() then SpellManager.addTags(nodeNewSpell, v) end
+						if SpellManager.addTags then SpellManager.addTags(nodeNewSpell, v) end
 						DB.setValue(v, 'usereset', 'string', 'consumable')	-- bmos setting spell as consumable (no reset on rest)
 					end
 				end
