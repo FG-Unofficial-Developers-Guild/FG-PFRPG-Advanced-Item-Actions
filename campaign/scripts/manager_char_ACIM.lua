@@ -148,7 +148,7 @@ local function addToWeaponDB(nodeItem)
 	local sDamage = DB.getValue(nodeItem, "damage", "");
 	local aDamageSplit = StringManager.split(sDamage, "/");
 	for kDamage, vDamage in ipairs(aDamageSplit) do
-		local diceDamage, nDamage = StringManager.convertStringToDice(vDamage);
+		local diceDamage, nDamage = DiceManager.convertStringToDice(vDamage);
 		table.insert(aDamage, { dice = diceDamage, mod = nDamage });
 	end
 	
