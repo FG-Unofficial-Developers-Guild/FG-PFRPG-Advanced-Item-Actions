@@ -34,8 +34,8 @@ local function addWeaponDamage(nodeDmgList, aDamage, nBonus, sStat, nStatMult, a
 	end
 end
 
-local function addDamageToWeapon(nodeWeapon, aDamage, nBonus, sStat, nStatMult, aCritMult, sFinalDamageType, bIsCorrosive,
-                                 bIsFlaming, bIsFrost, bIsShocking)
+local function addDamageToWeapon(nodeWeapon, aDamage, nBonus, sStat, nStatMult, aCritMult, sFinalDamageType, bIsCorrosive, bIsFlaming,
+                                 bIsFrost, bIsShocking)
 	local nodeDmgList = DB.createChild(nodeWeapon, 'damagelist');
 	if nodeDmgList then
 		addWeaponDamage(nodeDmgList, aDamage, nBonus, sStat, nStatMult, aCritMult, sFinalDamageType);
@@ -128,20 +128,8 @@ local function addToWeaponDB(nodeItem)
 	if bDouble then
 		local aDoubleDamageTypes = StringManager.split(sDamageType, '/');
 		if #aDoubleDamageTypes > 1 then
-			sFinalDamageType1 = table.concat(
-							                    ActionDamage.getDamageTypesFromString(
-											                    aDoubleDamageTypes[1]:gsub(' and ', ','):gsub(
-															                    ' or ', ','
-											                    )
-							                    ), ','
-			                    );
-			sFinalDamageType2 = table.concat(
-							                    ActionDamage.getDamageTypesFromString(
-											                    aDoubleDamageTypes[2]:gsub(' and ', ','):gsub(
-															                    ' or ', ','
-											                    )
-							                    ), ','
-			                    );
+			sFinalDamageType1 = table.concat(ActionDamage.getDamageTypesFromString(aDoubleDamageTypes[1]:gsub(' and ', ','):gsub(' or ', ',')), ',');
+			sFinalDamageType2 = table.concat(ActionDamage.getDamageTypesFromString(aDoubleDamageTypes[2]:gsub(' and ', ','):gsub(' or ', ',')), ',');
 		else
 			local aTempDamageTypes = ActionDamage.getDamageTypesFromString(sDamageType:gsub(' and ', ','):gsub(' or ', ','));
 			local aDamageTypes = {};
@@ -219,8 +207,7 @@ local function addToWeaponDB(nodeItem)
 			if string.find(sType, 'two%-handed') then sStatMult = 1.5; end
 
 			addDamageToWeapon(
-							nodeWeapon, aDamage, nBonus, 'strength', nStatMult, aCritMult, sFinalDamageType1, bIsCorrosive, bIsFlaming, bIsFrost,
-							bIsShocking
+							nodeWeapon, aDamage, nBonus, 'strength', nStatMult, aCritMult, sFinalDamageType1, bIsCorrosive, bIsFlaming, bIsFrost, bIsShocking
 			);
 		end
 	end
@@ -317,9 +304,7 @@ local function addToWeaponDB(nodeItem)
 			else
 				sStat = 'strength';
 			end
-			addDamageToWeapon(
-							nodeWeapon, aDamage, nBonus, sStat, 1, aCritMult, sFinalDamageType1, bIsCorrosive, bIsFlaming, bIsFrost, bIsShocking
-			);
+			addDamageToWeapon(nodeWeapon, aDamage, nBonus, sStat, 1, aCritMult, sFinalDamageType1, bIsCorrosive, bIsFlaming, bIsFrost, bIsShocking);
 		end
 	end
 end

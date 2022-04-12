@@ -150,8 +150,7 @@ end
 local function findSpellNode(sSpellName)
 	return (DB.findNode('spelldesc.' .. sSpellName .. '@*') or DB.findNode('spelldesc.category.' .. sSpellName .. '@*') or
 					       DB.findNode('spell.' .. sSpellName .. '@*') or DB.findNode('spell.category.' .. sSpellName .. '@*') or
-					       DB.findNode('reference.spells.' .. sSpellName .. '@*') or
-					       DB.findNode('reference.spells.category.' .. sSpellName .. '@*'));
+					       DB.findNode('reference.spells.' .. sSpellName .. '@*') or DB.findNode('reference.spells.category.' .. sSpellName .. '@*'));
 end
 
 local function getSpellFromItemName(sItemName)
@@ -288,9 +287,8 @@ local function getCasterLevelByClass(sClassName, sSpellClassLevel)
 	-- Debug.chat(sLowerClassName);
 	if StringManager.contains(
 					{
-						CLASS_NAME_ALCHEMIST, CLASS_NAME_ANTIPALADIN, CLASS_NAME_BARD, CLASS_NAME_BLOODRAGER, CLASS_NAME_HUNTER,
-      CLASS_NAME_INQUISITOR, CLASS_NAME_MAGUS, CLASS_NAME_PALADIN, CLASS_NAME_RANGER, CLASS_NAME_SKALD, CLASS_NAME_SUMMONER,
-      CLASS_NAME_WARPRIEST,
+						CLASS_NAME_ALCHEMIST, CLASS_NAME_ANTIPALADIN, CLASS_NAME_BARD, CLASS_NAME_BLOODRAGER, CLASS_NAME_HUNTER, CLASS_NAME_INQUISITOR,
+      CLASS_NAME_MAGUS, CLASS_NAME_PALADIN, CLASS_NAME_RANGER, CLASS_NAME_SKALD, CLASS_NAME_SUMMONER, CLASS_NAME_WARPRIEST,
 					}, sLowerClassName
 	) then
 		return (tonumber(sSpellClassLevel) - 1) * 3 + 1;
