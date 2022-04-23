@@ -11,6 +11,9 @@ For potions, wands and scrolls to work you need to have a module loaded that has
 Shields also have the ability to do damage as well as have ac associated with them. With this they now get an action item generated for them for shield bash. This means you no longer need to have 2 items for a shield if your character does shield bash.
 If the item is a weapon and and has flaming, flaming burst, igniting, frost, icy burst, corrosive, corrosive burst, shock and shocking burst in the properties it will generate the 1d6 damage as part of the weapon.
 
+To override the caster level of an item, change the item name before equipping it.
+For example: Scroll of Cure Light Wounds (CL 5)
+
 Originally created by [rmilmine](https://www.fantasygrounds.com/forums/member.php?215591-rmilmine).
 
 # Compatibility
