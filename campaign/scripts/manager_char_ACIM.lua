@@ -73,13 +73,13 @@ local function addToWeaponDB(nodeItem)
 	local nRange = DB.getValue(nodeItem, 'range', 0);
 	local nAtkBonus = nBonus;
 
-	local sType = string.lower(DB.getValue(nodeItem, 'subtype', ''));
+	local sSubType = string.lower(DB.getValue(nodeItem, 'subtype', ''));
 	local bMelee = true;
 	local bRanged = false;
-	if string.find(sType, 'melee') or string.find(sType, 'shield') then
+	if string.find(sSubType, 'melee') or string.find(sSubType, 'shield') then
 		bMelee = true;
 		if nRange > 0 then bRanged = true; end
-	elseif string.find(sType, 'ranged') then
+	elseif string.find(sSubType, 'ranged') then
 		bMelee = false;
 		bRanged = true;
 	end
@@ -191,7 +191,7 @@ local function addToWeaponDB(nodeItem)
 			DB.setValue(nodeWeapon, 'critatkrange', 'number', aCritThreshold[1]);
 
 			local nStatMult = 1;
-			if string.find(sType, 'two-handed') then nStatMult = 1.5; end
+			if string.match(sSubType, 'two%phanded') then nStatMult = 1.5; end
 
 			addDamageToWeapon(
 							nodeWeapon, aDamage, nBonus, 'strength', nStatMult, aCritMult, sFinalDamageType1, bIsCorrosive, bIsFlaming, bIsFrost, bIsShocking
