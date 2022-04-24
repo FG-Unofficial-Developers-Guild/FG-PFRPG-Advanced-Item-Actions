@@ -191,7 +191,7 @@ local function addToWeaponDB(nodeItem)
 			DB.setValue(nodeWeapon, 'critatkrange', 'number', aCritThreshold[1]);
 
 			local nStatMult = 1;
-			if string.find(sType, 'two%-handed') then nStatMult = 1.5; end
+			if string.find(sType, 'two-handed') then nStatMult = 1.5; end
 
 			addDamageToWeapon(
 							nodeWeapon, aDamage, nBonus, 'strength', nStatMult, aCritMult, sFinalDamageType1, bIsCorrosive, bIsFlaming, bIsFrost, bIsShocking
