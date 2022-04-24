@@ -5,7 +5,7 @@ local CLASS_NAME_BARD = 'bard';
 local CLASS_NAME_BLOODRAGER = 'bloodrager';
 local CLASS_NAME_CLERIC = 'cleric';
 local CLASS_NAME_DRUID = 'druid';
-local CLASS_NAME_HYUNTER = 'hunter';
+local CLASS_NAME_HUNTER = 'hunter';
 local CLASS_NAME_INQUISITOR = 'inquisitor';
 local CLASS_NAME_INVESTIGATOR = 'investigator';
 local CLASS_NAME_MAGUS = 'magus';
@@ -29,8 +29,7 @@ local function getWandCharges(nodeItem)
 	if not nodeItem then return 0; end
 	local nFieldCharges = DB.getValue(nodeItem, 'charge', 0);
 	local sName = DB.getValue(nodeItem, 'name', '');
-	local sCharges = sName:match('%p%d+%scharges%p');
-	sCharges = sName:match('%d+%scharges');
+	local sCharges = sName:match('%d+%scharges');
 	if sCharges then
 		local nNameCharges = tonumber(sCharges:match('%d+'));
 		if (nNameCharges and (nFieldCharges ~= 0)) then
@@ -110,8 +109,8 @@ local function trim_spell_name(string_spell_name)
 	string_spell_name = string_spell_name:gsub('%A+', '')
 
 	-- remove uppercase D or M at end of name
-	number_name_end = string.find(string_spell_name, 'D', string.len(string_spell_name)) or
-					                  string.find(string_spell_name, 'M', string.len(string_spell_name))
+	local number_name_end = string.find(string_spell_name, 'D', string.len(string_spell_name)) or
+					                        string.find(string_spell_name, 'M', string.len(string_spell_name))
 	if number_name_end then string_spell_name = string_spell_name:sub(1, number_name_end - 1) end
 
 	-- convert to lower-case
@@ -137,8 +136,8 @@ local function getSpellBetweenParenthesis(sItemName)
 end
 
 local function getSpellAfterOf(sItemName)
-	local sItemName = sItemName:gsub('%[.+%]', '')
-	local i, j = sItemName:find('of ');
+	sItemName = sItemName:gsub('%[.+%]', '')
+	local _, j = sItemName:find('of ');
 	if j ~= nil then
 		local string_spell_name = sItemName:sub(j);
 		string_spell_name = trim_spell_name(string_spell_name)
@@ -168,12 +167,20 @@ local function getSpellFromItemName(sItemName)
 			-- Debug.chat("getSpellFromItemName.nodeSpell", nodeSpell);
 			return nodeSpell;
 		else
-			local sSpellName = getSpellAfterOf(sItemName);
+			sSpellName = getSpellAfterOf(sItemName);
 			-- Debug.chat("getSpellFromItemName.getSpellAfterOf", sSpellName);
 			if sSpellName then return findSpellNode(sSpellName); end
 		end
 	end
 	return nil;
+end
+
+local function onItemChanged(nodeField)
+	local nodeChar = DB.getChild(nodeField, '....');
+	if nodeChar then
+		local nodeItem = nodeField.getParent();
+		if nodeItem then inventoryChanged(nodeChar, nodeItem); end
+	end
 end
 
 local function removeSpellClass(nodeItem, nodeSpellSet, nSpellLevel)
@@ -240,7 +247,7 @@ local function addSpell(nodeSource, nodeSpellClass, nLevel)
 		if nodeActions then
 			local nodeAction = nodeActions.getChildren();
 			if nodeAction then
-				for k, v in pairs(nodeAction) do
+				for _, v in pairs(nodeAction) do
 					if DB.getValue(v, 'type') == 'cast' then
 						if SpellManager.addTags then SpellManager.addTags(nodeNewSpell, v) end
 						DB.setValue(v, 'usereset', 'string', 'consumable') -- bmos setting spell as consumable (no reset on rest)
@@ -288,7 +295,8 @@ local function getCasterLevelByClass(sClassName, sSpellClassLevel)
 	if StringManager.contains(
 					{
 						CLASS_NAME_ALCHEMIST, CLASS_NAME_ANTIPALADIN, CLASS_NAME_BARD, CLASS_NAME_BLOODRAGER, CLASS_NAME_HUNTER, CLASS_NAME_INQUISITOR,
-      CLASS_NAME_MAGUS, CLASS_NAME_PALADIN, CLASS_NAME_RANGER, CLASS_NAME_SKALD, CLASS_NAME_SUMMONER, CLASS_NAME_WARPRIEST,
+      CLASS_NAME_INVESTIGATOR, CLASS_NAME_MAGUS, CLASS_NAME_PALADIN, CLASS_NAME_RANGER, CLASS_NAME_SKALD, CLASS_NAME_SUMMONER,
+      CLASS_NAME_WARPRIEST,
 					}, sLowerClassName
 	) then
 		return (tonumber(sSpellClassLevel) - 1) * 3 + 1;
@@ -334,21 +342,6 @@ local function getSpellLevel(nodeSpell)
 	return nSpellLevel, nLowestCasterLevel;
 end
 
-local function getCL(nodeItem)
-	if not nodeItem then return 0; end
-	local nCL = DB.getValue(nodeItem, 'cl', 0);
-	local sName = DB.getValue(nodeItem, 'name', '');
-	local sCL = sName:match('%pCL%s%d+%p');
-	if sCL then
-		local nNameCL = tonumber(sCL:match('%d+'));
-		if nNameCL then
-			DB.setValue(nodeItem, 'cl', 'number', nNameCL); -- write CL from name to database node "cl"
-		end
-		return nNameCL or nCL;
-	end
-	return nCL;
-end
-
 local bAnnnounced = false
 function inventoryChanged(nodeChar, nodeItem)
 	if nodeChar and nodeItem then
@@ -360,7 +353,6 @@ function inventoryChanged(nodeChar, nodeItem)
 		if not (bisPotion or bisWand or bisScroll) then return; end
 		if DB.getValue(nodeItem, 'isidentified') == 0 then return; end
 		local nUsesAvailable = 0;
-		local sSource = nodeItem.getPath();
 		if bisPotion or bisScroll then
 			nUsesAvailable = nodeItem.getChild('count').getValue();
 		elseif bisWand then
@@ -383,7 +375,23 @@ function inventoryChanged(nodeChar, nodeItem)
 		if not nodeSpell then return; end
 		local nSpellLevel, nMinCasterLevel = getSpellLevel(nodeSpell);
 		-- Debug.chat("inventoryChanged", "nSpellLevel", nSpellLevel);
-		local nCL = getCL(nodeItem);
+
+		local function getCL()
+			if not nodeItem then return 0; end
+			local nCL = DB.getValue(nodeItem, 'cl', 0);
+			local sName = DB.getValue(nodeItem, 'name', '');
+			local sCL = sName:match('%pCL%s*(%d+)%p');
+			if sCL then
+				local nNameCL = tonumber(sCL);
+				if nNameCL then
+					DB.setValue(nodeItem, 'cl', 'number', nNameCL); -- write CL from name to database node "cl"
+				end
+				return nNameCL or nCL;
+			end
+			return nCL;
+		end
+
+		local nCL = getCL();
 		if nCL < nMinCasterLevel then nCL = nMinCasterLevel; end
 		local nodeSpellSet = getSpellSet(nodeChar, nodeItem.getPath());
 		-- Debug.chat("inventoryChanged", "nodeSpellSet", nodeSpellSet);
@@ -395,17 +403,9 @@ function inventoryChanged(nodeChar, nodeItem)
 			if nodeSpellSet then
 				updateSpellSet(nodeSpellSet, nUsesAvailable, nSpellLevel);
 			elseif nCarried == 2 then
-				nodeSpellSet = addSpellToActionList(nodeChar, nodeSpell, sItemName, nUsesAvailable, nSpellLevel, nCL, nodeItem.getPath());
+				addSpellToActionList(nodeChar, nodeSpell, sItemName, nUsesAvailable, nSpellLevel, nCL, nodeItem.getPath());
 			end
 		end
-	end
-end
-
-function onItemChanged(nodeField)
-	local nodeChar = DB.getChild(nodeField, '....');
-	if nodeChar then
-		local nodeItem = nodeField.getParent();
-		if nodeItem then inventoryChanged(nodeChar, nodeItem); end
 	end
 end
 
