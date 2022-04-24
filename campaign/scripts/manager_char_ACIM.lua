@@ -1,12 +1,3 @@
-local function getSpecialProperties(sPropsLower)
-	local bIsAcid, bIsFlaming, bIsFrost, bIsElectric = false, false, false, false;
-	bIsAcid = (sPropsLower:match('corrosive'));
-	bIsFlaming = (sPropsLower:match('flaming') or sPropsLower:match('igniting'));
-	bIsFrost = (sPropsLower:match('frost') or sPropsLower:match('icy'));
-	bIsShocking = (sPropsLower:match('shock'));
-	return bIsAcid, bIsFlaming, bIsFrost, bIsShocking;
-end
-
 local function addWeaponDamage(nodeDmgList, aDamage, nBonus, sStat, nStatMult, aCritMult, sFinalDamageType)
 	if not nodeDmgList then return; end
 	local nodeDmg = DB.createChild(nodeDmgList);
@@ -46,15 +37,6 @@ local function addDamageToWeapon(nodeWeapon, aDamage, nBonus, sStat, nStatMult, 
 		if bIsFrost then addWeaponDamage(nodeDmgList, aSpecialDmg, 0, '', 1, { 0 }, 'cold'); end
 		if bIsShocking then addWeaponDamage(nodeDmgList, aSpecialDmg, 0, '', 1, { 0 }, 'electricity'); end
 	end
-end
-
-local function hasFeat(nodeChar, sFeat)
-	if not sFeat then return false; end
-	local sLowerFeat = StringManager.trim(sFeat:lower());
-	for _, vNode in pairs(DB.getChildren(nodeChar, 'featlist')) do
-		if StringManager.trim(DB.getValue(vNode, 'name', ''):lower()) == sLowerFeat then return true; end
-	end
-	return false;
 end
 
 local function addToWeaponDB(nodeItem)
@@ -116,13 +98,13 @@ local function addToWeaponDB(nodeItem)
 	local aDamage = {};
 	local sDamage = DB.getValue(nodeItem, 'damage', '');
 	local aDamageSplit = StringManager.split(sDamage, '/');
-	for kDamage, vDamage in ipairs(aDamageSplit) do
+	for _, vDamage in ipairs(aDamageSplit) do
 		local diceDamage, nDamage = DiceManager.convertStringToDice(vDamage);
 		table.insert(aDamage, { dice = diceDamage, mod = nDamage });
 	end
 
 	local sDamageType = DB.getValue(nodeItem, 'damagetype', ''):lower();
-	local sFinalDamageType1 = '';
+	local sFinalDamageType1;
 	local sFinalDamageType2 = '';
 
 	if bDouble then
@@ -160,7 +142,7 @@ local function addToWeaponDB(nodeItem)
 	local aCrit = StringManager.split(sCritical, '/');
 	local nThresholdIndex = 1;
 	local nMultIndex = 1;
-	for kCrit, sCrit in ipairs(aCrit) do
+	for _, sCrit in ipairs(aCrit) do
 		local sCritThreshold = string.match(sCrit, '(%d+)[%-–]20');
 		if sCritThreshold then
 			aCritThreshold[nThresholdIndex] = tonumber(sCritThreshold) or 20;
@@ -182,7 +164,15 @@ local function addToWeaponDB(nodeItem)
 	local sRangedAttackStat = DB.getValue(nodeChar, 'attackbonus.ranged.ability', '');
 
 	-- Get special properties of weapon.
-	local bIsCorrosive, bIsFlaming, bIsFrost, bIsShocking = getSpecialProperties(sPropsLower);
+	local function getSpecialProperties()
+		local bIsAcid = (sPropsLower:match('corrosive'));
+		local bIsFlaming = (sPropsLower:match('flaming') or sPropsLower:match('igniting'));
+		local bIsFrost = (sPropsLower:match('frost') or sPropsLower:match('icy'));
+		local bIsShocking = (sPropsLower:match('shock'));
+		return bIsAcid, bIsFlaming, bIsFrost, bIsShocking;
+	end
+
+	local bIsCorrosive, bIsFlaming, bIsFrost, bIsShocking = getSpecialProperties();
 	if bMelee then
 		local nodeWeapon = nodeWeapons.createChild();
 		if nodeWeapon then
