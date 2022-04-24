@@ -1,7 +1,9 @@
-local function addWeaponDamage(nodeDmgList, aDamage, nBonus, sStat, nStatMult, aCritMult, sFinalDamageType)
-	if not nodeDmgList then return; end
-	local nodeDmg = DB.createChild(nodeDmgList);
-	if nodeDmg then
+local function addDamageToWeapon(nodeWeapon, aDamage, nBonus, sStat, nStatMult, aCritMult, sFinalDamageType, bIsCorrosive, bIsFlaming,
+                                 bIsFrost, bIsShocking)
+	local nodeDmgList = DB.createChild(nodeWeapon, 'damagelist');
+
+	local function addWeaponDamage()
+		local nodeDmg = DB.createChild(nodeDmgList);
 		if aDamage[2] then
 			DB.setValue(nodeDmg, 'dice', 'dice', aDamage[2].dice);
 			DB.setValue(nodeDmg, 'bonus', 'number', nBonus + aDamage[2].mod);
@@ -23,20 +25,15 @@ local function addWeaponDamage(nodeDmgList, aDamage, nBonus, sStat, nStatMult, a
 
 		DB.setValue(nodeDmg, 'type', 'string', sFinalDamageType);
 	end
-end
 
-local function addDamageToWeapon(nodeWeapon, aDamage, nBonus, sStat, nStatMult, aCritMult, sFinalDamageType, bIsCorrosive, bIsFlaming,
-                                 bIsFrost, bIsShocking)
-	local nodeDmgList = DB.createChild(nodeWeapon, 'damagelist');
-	if nodeDmgList then
-		addWeaponDamage(nodeDmgList, aDamage, nBonus, sStat, nStatMult, aCritMult, sFinalDamageType);
-		local aSpecialDmg = {};
-		table.insert(aSpecialDmg, { dice = { 'd6' }, mod = 0 });
-		if bIsCorrosive then addWeaponDamage(nodeDmgList, aSpecialDmg, 0, '', 1, { 0 }, 'acid'); end
-		if bIsFlaming then addWeaponDamage(nodeDmgList, aSpecialDmg, 0, '', 1, { 0 }, 'fire'); end
-		if bIsFrost then addWeaponDamage(nodeDmgList, aSpecialDmg, 0, '', 1, { 0 }, 'cold'); end
-		if bIsShocking then addWeaponDamage(nodeDmgList, aSpecialDmg, 0, '', 1, { 0 }, 'electricity'); end
-	end
+	addWeaponDamage();
+
+	local aSpecialDmg = {};
+	table.insert(aSpecialDmg, { dice = { 'd6' }, mod = 0 });
+	if bIsCorrosive then addWeaponDamage(nodeDmgList, aSpecialDmg, 0, '', 1, { 0 }, 'acid'); end
+	if bIsFlaming then addWeaponDamage(nodeDmgList, aSpecialDmg, 0, '', 1, { 0 }, 'fire'); end
+	if bIsFrost then addWeaponDamage(nodeDmgList, aSpecialDmg, 0, '', 1, { 0 }, 'cold'); end
+	if bIsShocking then addWeaponDamage(nodeDmgList, aSpecialDmg, 0, '', 1, { 0 }, 'electricity'); end
 end
 
 local function addToWeaponDB(nodeItem)
@@ -299,50 +296,37 @@ local function addToWeaponDB(nodeItem)
 	end
 end
 
-local function addToSpellDB(nodeItem)
-	if not nodeItem then return; end
-	local nodeChar = DB.getChild(nodeItem, '...');
-	-- Debug.chat("addToSpellDB", "nodeChar", nodeChar);
-	InvManagerACIM.inventoryChanged(nodeChar, nodeItem);
-end
-
-local function onCharItemAdd(nodeItem)
-	DB.setValue(nodeItem, 'carried', 'number', 1);
-	DB.setValue(nodeItem, 'showonminisheet', 'number', 1);
-
-	if (string.lower(DB.getValue(nodeItem, 'type', '')) == 'goods and services') and StringManager.contains(
-					{ 'mounts and related gear', 'transport', 'spellcasting and services' }, string.lower(DB.getValue(nodeItem, 'subtype', ''))
-	) then DB.setValue(nodeItem, 'carried', 'number', 0); end
-
-	CharManager.addToArmorDB(nodeItem);
-	addToWeaponDB(nodeItem);
-	addToSpellDB(nodeItem);
-end
-
-local function removeFromSpellDB(nodeItem)
-	if not nodeItem then return; end
-	-- Debug.chat("removeFromArmorDB", "nodeItem", nodeItem);
-	local sItemType = string.lower(DB.getValue(nodeItem, 'type', ''));
-	-- Debug.chat("removeFromSpellDB", "nodeItem.type", sItemType);
-	if not (sItemType == 'potion' or sItemType == 'wand' or sItemType == 'scroll') then return end
-	local nodeChar = DB.getChild(nodeItem, '...');
-	-- Debug.chat("removeFromArmorDB", "nodeChar", nodeChar);
-	if not nodeChar then return; end
-	local nodeSpellSet = InvManagerACIM.getSpellSet(nodeChar, nodeItem.getPath());
-	-- Debug.chat("removeFromSpellDB", "nodeSpellSet", nodeSpellSet);
-	-- Debug.chat("removeFromSpellDB", "nodeSpellClass", nodeSpellClass);
-	if not nodeSpellSet then return; end
-	DB.deleteNode(nodeSpellSet);
-end
-
-local function onCharItemDelete(nodeItem)
-	CharManager.removeFromArmorDB(nodeItem);
-	CharManager.removeFromWeaponDB(nodeItem);
-	-- Debug.chat("onCharItemDelete", "nodeItem", nodeItem);
-	removeFromSpellDB(nodeItem);
-end
-
 function onInit()
+
+	local function onCharItemDelete(nodeItem)
+		CharManager.removeFromArmorDB(nodeItem);
+		CharManager.removeFromWeaponDB(nodeItem);
+
+		local function removeFromSpellDB()
+			local sItemType = DB.getValue(nodeItem, 'type', ''):lower();
+			if sItemType == 'potion' or sItemType == 'wand' or sItemType == 'scroll' then
+				local nodeSpellSet = InvManagerACIM.getSpellSet(DB.getChild(nodeItem, '...'), nodeItem.getPath());
+				if nodeSpellSet then DB.deleteNode(nodeSpellSet); end
+			end
+		end
+
+		removeFromSpellDB();
+	end
+
+	local function onCharItemAdd(nodeItem)
+		DB.setValue(nodeItem, 'carried', 'number', 1);
+		DB.setValue(nodeItem, 'showonminisheet', 'number', 1);
+
+		if (string.lower(DB.getValue(nodeItem, 'type', '')) == 'goods and services') and StringManager.contains(
+						{ 'mounts and related gear', 'transport', 'spellcasting and services' }, string.lower(DB.getValue(nodeItem, 'subtype', ''))
+		) then DB.setValue(nodeItem, 'carried', 'number', 0); end
+
+		CharManager.addToArmorDB(nodeItem);
+		addToWeaponDB(nodeItem);
+
+		InvManagerACIM.inventoryChanged(DB.getChild(nodeItem, '...'), nodeItem);
+	end
+
 	ItemManager.setCustomCharAdd(onCharItemAdd);
 	ItemManager.setCustomCharRemove(onCharItemDelete);
 end
