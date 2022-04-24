@@ -14,6 +14,9 @@ If the item is a weapon and and has flaming, flaming burst, igniting, frost, icy
 To override the caster level of an item, change the item name before equipping it.
 For example: Scroll of Cure Light Wounds (CL 5)
 
+To override the remaining charges of a wand, change the item name before equipping it.
+For example: Wand of Cure Light Wounds [13 charges]
+
 Originally created by [rmilmine](https://www.fantasygrounds.com/forums/member.php?215591-rmilmine).
 
 # Compatibility
