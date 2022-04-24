@@ -361,7 +361,7 @@ function inventoryChanged(nodeChar, nodeItem)
 
 				local function addSpellToActionList(sDisplayName, sItemSource)
 					if not nodeChar or not nodeSpell or sDisplayName == '' or sItemSource == '' or nSpellLevel < 0 or nSpellLevel > 9 then return; end
-					local nodeNewSpellClass = nodeSpellSet.createChild();
+					local nodeNewSpellClass = nodeChar.createChild('spellset').createChild();
 					if nodeNewSpellClass then
 						DB.setValue(nodeNewSpellClass, 'label', 'string', sDisplayName);
 						DB.setValue(nodeNewSpellClass, 'castertype', 'string', 'spontaneous');
