@@ -23,6 +23,8 @@ local CLASS_NAME_ADEPT = 'adept';
 local CLASS_NAME_BLACKGUARD = 'blackguard';
 local CLASS_NAME_ASSASSIN = 'assassin';
 
+-- luacheck: globals inventoryChanged
+
 local function usingEnhancedItems() return StringManager.contains(Extension.getExtensions(), 'FG-PFRPG-Enhanced-Items'); end
 
 local function getWandCharges(nodeItem)
