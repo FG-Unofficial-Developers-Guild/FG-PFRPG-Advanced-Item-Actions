@@ -278,7 +278,7 @@ local function addToWeaponDB(nodeItem)
 			DB.setValue(nodeWeapon, 'critatkrange', 'number', aCritThreshold[1]);
 
 			local sNameLower = sName:lower();
-			local sStat = '';
+			local sStat;
 			if sNameLower:find('sling') ~= nil then
 				sStat = 'strength';
 			elseif (sNameLower:find('shortbow') or sNameLower:find('longbow')) and sNameLower:find('composite') then
@@ -310,13 +310,9 @@ local function onCharItemAdd(nodeItem)
 	DB.setValue(nodeItem, 'carried', 'number', 1);
 	DB.setValue(nodeItem, 'showonminisheet', 'number', 1);
 
-	if string.lower(DB.getValue(nodeItem, 'type', '')) == 'goods and services' then
-		local sSubType = string.lower(DB.getValue(nodeItem, 'subtype', ''));
-		if (sType == 'goods and services') and
-						StringManager.contains({ 'mounts and related gear', 'transport', 'spellcasting and services' }, sSubType) then
-			DB.setValue(nodeItem, 'carried', 'number', 0);
-		end
-	end
+	if (string.lower(DB.getValue(nodeItem, 'type', '')) == 'goods and services') and StringManager.contains(
+					{ 'mounts and related gear', 'transport', 'spellcasting and services' }, string.lower(DB.getValue(nodeItem, 'subtype', ''))
+	) then DB.setValue(nodeItem, 'carried', 'number', 0); end
 
 	CharManager.addToArmorDB(nodeItem);
 	addToWeaponDB(nodeItem);
