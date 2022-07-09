@@ -231,20 +231,20 @@ local bAnnnounced = false
 function inventoryChanged(nodeChar, nodeItem)
 	if nodeChar and nodeItem then
 		local sItemType = string.lower(DB.getValue(nodeItem, 'type', ''));
-		local bisPotion = sItemType:match('potion')
-		local bisWand = sItemType:match('wand')
-		local bisScroll = sItemType:match('scroll')
-		if not (bisPotion or bisWand or bisScroll) then return; end
+		local bPotion = sItemType:match('potion')
+		local bWand = sItemType:match('wand')
+		local bScroll = sItemType:match('scroll')
+		if not (bPotion or bWand or bScroll) then return; end
+
 		if DB.getValue(nodeItem, 'isidentified') == 0 then return; end
-		local nUsesAvailable = 0;
-		if bisPotion or bisScroll then
-			nUsesAvailable = nodeItem.getChild('count').getValue();
-		elseif bisWand then
+
+		local nUsesAvailable;
+		if bWand then
 
 			local function getWandCharges()
 				local nFieldCharges = DB.getValue(nodeItem, 'charge', 0);
 				local sName = DB.getValue(nodeItem, 'name', '');
-				local sCharges = sName:match('%d+%scharges');
+				local sCharges = sName:match('%d+%s+charges');
 				if sCharges then
 					local nNameCharges = tonumber(sCharges:match('%d+'));
 					if (nNameCharges and (nFieldCharges ~= 0)) then
@@ -274,6 +274,8 @@ function inventoryChanged(nodeChar, nodeItem)
 				end
 				nUsesAvailable = 50
 			end
+		else
+			nUsesAvailable = nodeItem.getChild('count').getValue();
 		end
 		local sItemName = nodeItem.getChild('name').getValue();
 		local nodeSpell = getSpellFromItemName(sItemName);
@@ -324,35 +326,37 @@ function inventoryChanged(nodeChar, nodeItem)
 		if nCL < nMinCasterLevel then nCL = nMinCasterLevel; end
 		local nodeSpellSet = getSpellSet(nodeChar, nodeItem.getPath());
 		local nCarried = DB.getValue(nodeItem, 'carried', 1)
-		if nCarried ~= 2 then
+		if nodeSpellSet then
 
-			local function removeSpellClass()
-				if nodeItem and nodeSpellSet and nSpellLevel then
+			local function updateUsesRemaining()
+				local function writeUses(fieldName)
+					DB.removeHandler('charsheet.*.inventorylist.*.' .. fieldName, 'onUpdate', onItemChanged);
 					local nodeSpellLevel = DB.getChild(nodeSpellSet, 'levels.level' .. nSpellLevel);
-					local nTotalCast = DB.getValue(nodeSpellLevel, 'totalcast', 0);
-					local nAvailable = DB.getValue(nodeSpellSet, 'availablelevel' .. nSpellLevel, 0);
-					if sItemType:match('wand') then
-						if usingEnhancedItems() then
-							DB.removeHandler('charsheet.*.inventorylist.*.charge', 'onUpdate', onItemChanged);
-							if DB.getValue(nodeItem, 'charge') ~= (nAvailable - nTotalCast) then
-								DB.setValue(nodeItem, 'charge', 'number', nAvailable - nTotalCast);
-							end
-							DB.addHandler('charsheet.*.inventorylist.*.charge', 'onUpdate', onItemChanged);
-						end
-					elseif sItemType:match('potion') or sItemType:match('scroll') then
-						DB.removeHandler('charsheet.*.inventorylist.*.count', 'onUpdate', onItemChanged);
-						if DB.getValue(nodeItem, 'count') ~= (nAvailable - nTotalCast) then
-							DB.setValue(nodeItem, 'count', 'number', nAvailable - nTotalCast);
-						end
-						DB.addHandler('charsheet.*.inventorylist.*.count', 'onUpdate', onItemChanged);
+					local nUsesRemaining = DB.getValue(nodeSpellSet, 'availablelevel' .. nSpellLevel, 0) - DB.getValue(nodeSpellLevel, 'totalcast', 0);
+					DB.setValue(nodeItem, fieldName, 'number', nUsesRemaining);
+					DB.addHandler('charsheet.*.inventorylist.*.' .. fieldName, 'onUpdate', onItemChanged);
 				end
-					DB.deleteNode(nodeSpellSet);
+
+				if bWand then
+					if usingEnhancedItems() then
+						writeUses('charge')
+					end
+				else
+					writeUses('count')
 				end
 			end
+			updateUsesRemaining()
 
-			if nodeSpellSet then removeSpellClass(); end
-		else
-			if nodeSpellSet then
+			if nCarried ~= 2 then
+
+				local function removeSpellClass()
+					if nodeItem and nodeSpellSet and nSpellLevel then
+						DB.deleteNode(nodeSpellSet);
+					end
+				end
+
+				removeSpellClass();
+			else
 
 				local function updateSpellSet()
 					if nodeSpellSet and nUsesAvailable > 0 and nSpellLevel >= 0 and nSpellLevel <= 9 then
@@ -363,30 +367,30 @@ function inventoryChanged(nodeChar, nodeItem)
 				end
 
 				updateSpellSet();
-			elseif nCarried == 2 then
+			end
+		elseif nCarried == 2 then
 
-				local function addSpellToActionList(sDisplayName, sItemSource)
-					if not nodeChar or not nodeSpell or sDisplayName == '' or sItemSource == '' or nSpellLevel < 0 or nSpellLevel > 9 then return; end
-					local nodeNewSpellClass = nodeChar.createChild('spellset').createChild();
-					if nodeNewSpellClass then
-						DB.setValue(nodeNewSpellClass, 'label', 'string', sDisplayName);
-						DB.setValue(nodeNewSpellClass, 'castertype', 'string', 'spontaneous');
-						DB.setValue(nodeNewSpellClass, 'availablelevel' .. nSpellLevel, 'number', nUsesAvailable);
-						DB.setValue(nodeNewSpellClass, 'source_name', 'string', sItemSource);
-						DB.setValue(nodeNewSpellClass, 'cl', 'number', nCL);
-						DB.setValue(nodeChar, 'spellmode', 'string', 'standard');
-						local nodeNew = addSpell(nodeSpell, nodeNewSpellClass, nSpellLevel);
-						if nodeNew then
-							for _, nodeAction in pairs(DB.getChildren(nodeNew, 'actions')) do
-								if DB.getValue(nodeAction, 'type', '') == 'cast' then DB.setValue(nodeAction, 'usereset', 'string', 'consumable'); end
-							end
+			local function addSpellToActionList(sDisplayName, sItemSource)
+				if not nodeChar or not nodeSpell or sDisplayName == '' or sItemSource == '' or nSpellLevel < 0 or nSpellLevel > 9 then return; end
+				local nodeNewSpellClass = nodeChar.createChild('spellset').createChild();
+				if nodeNewSpellClass then
+					DB.setValue(nodeNewSpellClass, 'label', 'string', sDisplayName);
+					DB.setValue(nodeNewSpellClass, 'castertype', 'string', 'spontaneous');
+					DB.setValue(nodeNewSpellClass, 'availablelevel' .. nSpellLevel, 'number', nUsesAvailable);
+					DB.setValue(nodeNewSpellClass, 'source_name', 'string', sItemSource);
+					DB.setValue(nodeNewSpellClass, 'cl', 'number', nCL);
+					DB.setValue(nodeChar, 'spellmode', 'string', 'standard');
+					local nodeNew = addSpell(nodeSpell, nodeNewSpellClass, nSpellLevel);
+					if nodeNew then
+						for _, nodeAction in pairs(DB.getChildren(nodeNew, 'actions')) do
+							if DB.getValue(nodeAction, 'type', '') == 'cast' then DB.setValue(nodeAction, 'usereset', 'string', 'consumable'); end
 						end
 					end
-					return nodeSpellSet, nodeNewSpellClass;
 				end
-
-				addSpellToActionList(sItemName, nodeItem.getPath());
+				return nodeSpellSet, nodeNewSpellClass;
 			end
+
+			addSpellToActionList(sItemName, nodeItem.getPath());
 		end
 	end
 end
