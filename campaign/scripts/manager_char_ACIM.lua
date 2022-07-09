@@ -36,7 +36,7 @@ local function addDamageToWeapon(nodeWeapon, aDamage, nBonus, sStat, nStatMult, 
 	if bIsShocking then addWeaponDamage(nodeDmgList, aSpecialDmg, 0, '', 1, { 0 }, 'electricity'); end
 end
 
-local function addToWeaponDB(nodeItem)
+local function addToWeaponDB_new(nodeItem)
 	-- Parameter validation
 	if string.lower(DB.getValue(nodeItem, 'type', '')) ~= 'weapon' then
 		if string.lower(DB.getValue(nodeItem, 'subtype', '')) ~= 'shield' then
@@ -296,37 +296,32 @@ local function addToWeaponDB(nodeItem)
 	end
 end
 
+local onCharItemDelete_old;
+local function onCharItemDelete_new(nodeItem, ...)
+	onCharItemDelete_old(nodeItem, ...);
+
+	local sItemType = DB.getValue(nodeItem, 'type', ''):lower();
+	if sItemType == 'potion' or sItemType == 'wand' or sItemType == 'scroll' then
+		local nodeSpellSet = InvManagerACIM.getSpellSet(DB.getChild(nodeItem, '...'), nodeItem.getPath());
+		if nodeSpellSet then DB.deleteNode(nodeSpellSet); end
+	end
+end
+
+local onCharItemAdd_old;
+local function onCharItemAdd_new(nodeItem, ...)
+	onCharItemAdd_old(nodeItem, ...);
+
+	InvManagerACIM.inventoryChanged(nodeItem.getChild('...'), nodeItem);
+end
+
 function onInit()
+	CharManager.addToWeaponDB = addToWeaponDB_new;
 
-	local function onCharItemDelete(nodeItem)
-		CharManager.removeFromArmorDB(nodeItem);
-		CharManager.removeFromWeaponDB(nodeItem);
+	onCharItemDelete_old = CharManager.onCharItemDelete;
+	CharManager.onCharItemDelete = onCharItemDelete_new;
+	ItemManager.setCustomCharRemove(onCharItemDelete_new);
 
-		local function removeFromSpellDB()
-			local sItemType = DB.getValue(nodeItem, 'type', ''):lower();
-			if sItemType == 'potion' or sItemType == 'wand' or sItemType == 'scroll' then
-				local nodeSpellSet = InvManagerACIM.getSpellSet(DB.getChild(nodeItem, '...'), nodeItem.getPath());
-				if nodeSpellSet then DB.deleteNode(nodeSpellSet); end
-			end
-		end
-
-		removeFromSpellDB();
-	end
-
-	local function onCharItemAdd(nodeItem)
-		DB.setValue(nodeItem, 'carried', 'number', 1);
-		DB.setValue(nodeItem, 'showonminisheet', 'number', 1);
-
-		if (string.lower(DB.getValue(nodeItem, 'type', '')) == 'goods and services') and StringManager.contains(
-						{ 'mounts and related gear', 'transport', 'spellcasting and services' }, string.lower(DB.getValue(nodeItem, 'subtype', ''))
-		) then DB.setValue(nodeItem, 'carried', 'number', 0); end
-
-		CharManager.addToArmorDB(nodeItem);
-		addToWeaponDB(nodeItem);
-
-		InvManagerACIM.inventoryChanged(DB.getChild(nodeItem, '...'), nodeItem);
-	end
-
-	ItemManager.setCustomCharAdd(onCharItemAdd);
-	ItemManager.setCustomCharRemove(onCharItemDelete);
+	onCharItemAdd_old = CharManager.onCharItemAdd;
+	CharManager.onCharItemAdd = onCharItemAdd_new;
+	ItemManager.setCustomCharAdd(onCharItemAdd_new);
 end
