@@ -328,10 +328,10 @@ function inventoryChanged(nodeChar, nodeItem)
 
 			local function removeSpellClass()
 				if nodeItem and nodeSpellSet and nSpellLevel then
+					local nodeSpellLevel = DB.getChild(nodeSpellSet, 'levels.level' .. nSpellLevel);
+					local nTotalCast = DB.getValue(nodeSpellLevel, 'totalcast', 0);
+					local nAvailable = DB.getValue(nodeSpellSet, 'availablelevel' .. nSpellLevel, 0);
 					if sItemType:match('wand') then
-						local nodeSpellLevel = DB.getChild(nodeSpellSet, 'levels.level' .. nSpellLevel);
-						local nTotalCast = DB.getValue(nodeSpellLevel, 'totalcast', 0);
-						local nAvailable = DB.getValue(nodeSpellSet, 'availablelevel' .. nSpellLevel, 0);
 						if usingEnhancedItems() then
 							DB.removeHandler('charsheet.*.inventorylist.*.charge', 'onUpdate', onItemChanged);
 							if DB.getValue(nodeItem, 'charge') ~= (nAvailable - nTotalCast) then
@@ -339,7 +339,13 @@ function inventoryChanged(nodeChar, nodeItem)
 							end
 							DB.addHandler('charsheet.*.inventorylist.*.charge', 'onUpdate', onItemChanged);
 						end
-					end
+					elseif sItemType:match('potion') or sItemType:match('scroll') then
+						DB.removeHandler('charsheet.*.inventorylist.*.count', 'onUpdate', onItemChanged);
+						if DB.getValue(nodeItem, 'count') ~= (nAvailable - nTotalCast) then
+							DB.setValue(nodeItem, 'count', 'number', nAvailable - nTotalCast);
+						end
+						DB.addHandler('charsheet.*.inventorylist.*.count', 'onUpdate', onItemChanged);
+				end
 					DB.deleteNode(nodeSpellSet);
 				end
 			end
