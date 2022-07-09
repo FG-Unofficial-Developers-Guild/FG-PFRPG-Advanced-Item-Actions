@@ -314,7 +314,29 @@ local function onCharItemAdd_new(nodeItem, ...)
 	InvManagerACIM.inventoryChanged(nodeItem.getChild('...'), nodeItem);
 end
 
+-- Reset consumables on rest
+local resetSpells_old;
+local function resetSpells_new(nodeCaster, ...)
+	if ActorManager.isPC(nodeCaster) then
+		for _, nodeItem in pairs(DB.getChildren(nodeCaster, 'inventorylist')) do
+			if InvManagerACIM.inventoryChanged(nodeCaster, nodeItem) then
+				local nCarried = DB.getValue(nodeItem, 'carried', 1)
+				DB.setValue(nodeItem, 'carried', 'number', 1)
+				if OptionsManager.isOption("AIA_UnequipOnRest", "disabled") then
+					DB.setValue(nodeItem, 'carried', 'number', nCarried)
+				end
+			end
+		end
+	end
+	resetSpells_old(nodeCaster, ...)
+end
+
 function onInit()
+	OptionsManager.registerOption2(
+					'AIA_UnequipOnRest', false, 'option_header_game', 'option_label_AIA_unequip_on_rest', 'option_entry_cycler',
+					{ labels = 'option_val_off', values = 'disabled', baselabel = 'option_val_on', baseval = 'enabled', default = 'enabled' }
+	);
+
 	CharManager.addToWeaponDB = addToWeaponDB_new;
 
 	onCharItemDelete_old = CharManager.onCharItemDelete;
@@ -324,4 +346,7 @@ function onInit()
 	onCharItemAdd_old = CharManager.onCharItemAdd;
 	CharManager.onCharItemAdd = onCharItemAdd_new;
 	ItemManager.setCustomCharAdd(onCharItemAdd_new);
+
+	resetSpells_old = SpellManager.resetSpells;
+	SpellManager.resetSpells = resetSpells_new;
 end
