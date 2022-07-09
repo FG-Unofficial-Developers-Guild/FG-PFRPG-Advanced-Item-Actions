@@ -191,7 +191,7 @@ local function addSpell(nodeSource, nodeSpellClass, nLevel)
 			if nodeAction then
 				for _, v in pairs(nodeAction) do
 					if DB.getValue(v, 'type') == 'cast' then
-						if SpellManager.addTags then SpellManager.addTags(nodeNewSpell, v) end
+						if SpellManager.addTags then SpellManager.addTags(nodeNewSpell, v) end -- luacheck: globals SpellManager.addTags
 						DB.setValue(v, 'usereset', 'string', 'consumable') -- bmos setting spell as consumable (no reset on rest)
 					end
 				end
