@@ -1,3 +1,7 @@
+--
+-- Please see the LICENSE.md file included with this distribution for attribution and copyright information.
+--
+
 local CLASS_NAME_ALCHEMIST = 'alchemist';
 local CLASS_NAME_ANTIPALADIN = 'antipaladin';
 local CLASS_NAME_ARCHANIST = 'archanist';

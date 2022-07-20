@@ -1,3 +1,7 @@
+--
+-- Please see the LICENSE.md file included with this distribution for attribution and copyright information.
+--
+
 local function addDamageToWeapon(nodeWeapon, aDamage, nBonus, sStat, nStatMult, aCritMult, sFinalDamageType, bIsCorrosive, bIsFlaming,
                                  bIsFrost, bIsShocking)
 	local nodeDmgList = DB.createChild(nodeWeapon, 'damagelist');
