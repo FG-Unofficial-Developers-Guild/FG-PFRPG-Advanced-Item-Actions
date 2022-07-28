@@ -2,7 +2,7 @@
 <root version="3.3.9" release="1">
 	<properties>
 		<name>Feature: Advanced Item Actions</name>
-		<version>1.9</version>
+		<version>1.10</version>
 		<loadorder>60</loadorder>
 		<author>rmilmine and bmos</author>
 		<description>This extension takes consumables equipped in the inventory and adds them to the action tab.</description>
@@ -15,7 +15,7 @@
 		<loadorder>25</loadorder>
 	</properties>
 
-	<announcement text="https://www.fantasygrounds.com/forums/showthread.php?57819-Advanced-Character-Iventory-Manager-for-3-5E-and-Pathfinder\rAdvanced Item Actions v1.9\rThis extension takes consumables equipped in the inventory and adds them to the action tab." font="emotefont" />
+	<announcement text="https://www.fantasygrounds.com/forums/showthread.php?57819-Advanced-Character-Iventory-Manager-for-3-5E-and-Pathfinder\rAdvanced Item Actions v1.10\rThis extension takes consumables equipped in the inventory and adds them to the action tab." font="emotefont" />
 
 	<base>
 		<string name="option_label_AIA_unequip_on_rest">Party: Unequip Consumables on Rest</string>
