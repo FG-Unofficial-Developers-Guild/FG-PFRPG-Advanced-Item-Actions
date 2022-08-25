@@ -27,14 +27,17 @@ local CLASS_NAME_ADEPT = 'adept';
 local CLASS_NAME_BLACKGUARD = 'blackguard';
 local CLASS_NAME_ASSASSIN = 'assassin';
 
+local SPELLSET = 'spellset'
+
 -- luacheck: globals inventoryChanged getSpellSet
 
 local function usingEnhancedItems() return StringManager.contains(Extension.getExtensions(), 'FG-PFRPG-Enhanced-Items'); end
+local function usingAdvancedCharsheet() return StringManager.contains(Extension.getExtensions(), 'Advanced Charsheet'); end
 
 function getSpellSet(nodeChar, sItemSource)
 	if nodeChar and sItemSource ~= '' then
 		-- Debug.chat("getSpellSet", "sItemSource", sItemSource);
-		for _, nodeSpellSet in pairs(DB.getChildren(nodeChar, 'spellset')) do
+		for _, nodeSpellSet in pairs(DB.getChildren(nodeChar, SPELLSET)) do
 			-- Debug.chat(sItemSource, nodeSpellSet);
 			if DB.getValue(nodeSpellSet, 'source_name') == sItemSource then return nodeSpellSet; end
 		end
@@ -394,7 +397,7 @@ function inventoryChanged(nodeChar, nodeItem, nodeTrigger)
 
 		local function addSpellset()
 			if not nodeChar or not nodeSpell or sItemName == '' or nodeItem.getPath() == '' or nSpellLevel < 0 or nSpellLevel > 9 then return; end
-			local nodeNewSpellClass = nodeChar.createChild('spellset').createChild();
+			local nodeNewSpellClass = nodeChar.createChild(SPELLSET).createChild();
 			if nodeNewSpellClass then
 				DB.setValue(nodeNewSpellClass, 'label', 'string', sItemName);
 				DB.setValue(nodeNewSpellClass, 'castertype', 'string', 'spontaneous');
@@ -421,6 +424,9 @@ function onInit()
 	DB.addHandler('charsheet.*.inventorylist.*.carried', 'onUpdate', onItemChanged);
 	DB.addHandler('charsheet.*.inventorylist.*.count', 'onUpdate', onItemChanged);
 	if usingEnhancedItems() then DB.addHandler('charsheet.*.inventorylist.*.charge', 'onUpdate', onItemChanged); end
+	if usingAdvancedCharsheet() then
+		SPELLSET = 'itemspellset';
+	end
 end
 
 function onClose()
