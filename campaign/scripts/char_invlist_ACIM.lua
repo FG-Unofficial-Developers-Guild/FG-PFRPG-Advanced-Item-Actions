@@ -31,8 +31,7 @@ local SPELLSET = 'spellset'
 
 -- luacheck: globals inventoryChanged getSpellSet
 
-local function usingEnhancedItems() return StringManager.contains(Extension.getExtensions(), 'FG-PFRPG-Enhanced-Items'); end
-local function usingAdvancedCharsheet() return StringManager.contains(Extension.getExtensions(), 'Advanced Charsheet'); end
+local function usingExt(sExt) return StringManager.contains(Extension.getExtensions(), sExt); end
 
 function getSpellSet(nodeChar, sItemSource)
 	if nodeChar and sItemSource ~= '' then
@@ -249,7 +248,7 @@ local function getUsesAvailable(nodeItem, bWand)
 				local nNameCharges = tonumber(sCharges:match('%d+'));
 				if (nNameCharges and (nFieldCharges ~= 0)) then
 					if (nFieldCharges < nNameCharges) then return nFieldCharges; end
-				elseif usingEnhancedItems() and (nNameCharges and (nFieldCharges == 0)) then
+				elseif usingExt('FG-PFRPG-Enhanced-Items') and (nNameCharges and (nFieldCharges == 0)) then
 					DB.removeHandler('charsheet.*.inventorylist.*.charge', 'onUpdate', onItemChanged)
 					DB.setValue(nodeItem, 'charge', 'number', nNameCharges); -- write charges from name to database node "charge"
 					sName = sName:gsub(sCharges, ''):gsub('%[%]', ''); -- trim charges from name
@@ -363,7 +362,7 @@ function inventoryChanged(nodeChar, nodeItem, nodeTrigger)
 			end
 
 			if bWand then
-				if usingEnhancedItems() then
+				if usingExt('FG-PFRPG-Enhanced-Items') then
 					writeUses('charge')
 				end
 			else
@@ -423,15 +422,13 @@ function onInit()
 	DB.addHandler('charsheet.*.inventorylist.*.isidentified', 'onUpdate', onItemChanged);
 	DB.addHandler('charsheet.*.inventorylist.*.carried', 'onUpdate', onItemChanged);
 	DB.addHandler('charsheet.*.inventorylist.*.count', 'onUpdate', onItemChanged);
-	if usingEnhancedItems() then DB.addHandler('charsheet.*.inventorylist.*.charge', 'onUpdate', onItemChanged); end
-	if usingAdvancedCharsheet() then
-		SPELLSET = 'itemspellset';
-	end
+	if usingExt('FG-PFRPG-Enhanced-Items') then DB.addHandler('charsheet.*.inventorylist.*.charge', 'onUpdate', onItemChanged); end
+	if usingExt('Advanced Charsheet') then SPELLSET = 'itemspellset'; end
 end
 
 function onClose()
 	DB.removeHandler('charsheet.*.inventorylist.*.isidentified', 'onUpdate', onItemChanged);
 	DB.removeHandler('charsheet.*.inventorylist.*.carried', 'onUpdate', onItemChanged);
 	DB.removeHandler('charsheet.*.inventorylist.*.count', 'onUpdate', onItemChanged);
-	if usingEnhancedItems() then DB.removeHandler('charsheet.*.inventorylist.*.charge', 'onUpdate', onItemChanged); end
+	if usingExt('FG-PFRPG-Enhanced-Items') then DB.removeHandler('charsheet.*.inventorylist.*.charge', 'onUpdate', onItemChanged); end
 end
