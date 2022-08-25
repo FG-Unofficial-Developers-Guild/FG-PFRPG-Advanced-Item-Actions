@@ -27,7 +27,7 @@ local CLASS_NAME_ADEPT = 'adept';
 local CLASS_NAME_BLACKGUARD = 'blackguard';
 local CLASS_NAME_ASSASSIN = 'assassin';
 
-local SPELLSET = 'spellset'
+local _sSpellset = 'spellset'
 
 -- luacheck: globals inventoryChanged getSpellSet
 
@@ -36,7 +36,7 @@ local function usingExt(sExt) return StringManager.contains(Extension.getExtensi
 function getSpellSet(nodeChar, sItemSource)
 	if nodeChar and sItemSource ~= '' then
 		-- Debug.chat("getSpellSet", "sItemSource", sItemSource);
-		for _, nodeSpellSet in pairs(DB.getChildren(nodeChar, SPELLSET)) do
+		for _, nodeSpellSet in pairs(DB.getChildren(nodeChar, _sSpellset)) do
 			-- Debug.chat(sItemSource, nodeSpellSet);
 			if DB.getValue(nodeSpellSet, 'source_name') == sItemSource then return nodeSpellSet; end
 		end
@@ -396,7 +396,7 @@ function inventoryChanged(nodeChar, nodeItem, nodeTrigger)
 
 		local function addSpellset()
 			if not nodeChar or not nodeSpell or sItemName == '' or nodeItem.getPath() == '' or nSpellLevel < 0 or nSpellLevel > 9 then return; end
-			local nodeNewSpellClass = nodeChar.createChild(SPELLSET).createChild();
+			local nodeNewSpellClass = nodeChar.createChild(_sSpellset).createChild();
 			if nodeNewSpellClass then
 				DB.setValue(nodeNewSpellClass, 'label', 'string', sItemName);
 				DB.setValue(nodeNewSpellClass, 'castertype', 'string', 'spontaneous');
