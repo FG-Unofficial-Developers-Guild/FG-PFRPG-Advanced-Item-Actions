@@ -423,7 +423,7 @@ function onInit()
 	DB.addHandler('charsheet.*.inventorylist.*.carried', 'onUpdate', onItemChanged);
 	DB.addHandler('charsheet.*.inventorylist.*.count', 'onUpdate', onItemChanged);
 	if usingExt('FG-PFRPG-Enhanced-Items') then DB.addHandler('charsheet.*.inventorylist.*.charge', 'onUpdate', onItemChanged); end
-	if usingExt('Advanced Charsheet') then SPELLSET = 'itemspellset'; end
+	if usingExt('Advanced Charsheet') then _sSpellset = 'itemspellset'; end
 end
 
 function onClose()
