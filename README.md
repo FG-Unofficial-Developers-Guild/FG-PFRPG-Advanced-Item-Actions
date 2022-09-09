@@ -2,8 +2,7 @@
 
 # PFRPG Advanced Item Actions
 This extension changes the way items are added to a characters inventory. In particular what happens when you do.
-If the item added is a wand, potion or scroll and is equipped it will generate an action item for it in the action tab. It will look up the spell from the item name that is within ()
-So a Wand (Cure Light Wounds) will create a spell class caster level 1 and have 50 uses of level spells.
+If the item added is a wand, potion or scroll and is equipped it will generate an action item for it in the action tab. It will look up the spell from the item name that is within parentheses. For example: "Wand (Cure Light Wounds)" will create a spell class caster level 1 and have 50 uses of level spells.
 You can also now use the format "Wand of Cure Light Wounds" or "Potion of Cure Light Wounds" or "Scroll of Cure Light Wounds".
 This also works with the Enhanced Items v4 extension to keep track of charges.
 For potions, wands, and scrolls to work, you need to have a module loaded that has the spell in it.
