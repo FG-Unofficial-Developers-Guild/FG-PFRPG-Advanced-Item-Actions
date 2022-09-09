@@ -65,8 +65,9 @@ local function getSpellFromItemName(sItemName)
 	end
 
 	local function findSpellNode(sSpellName)
-		if DB.findNode('spelldesc.' .. sSpellName .. '@*') then
-			return DB.findNode('spelldesc.' .. sSpellName .. '@*');
+		local nodeRAWFormat = DB.findNode('spelldesc.' .. sSpellName .. '@*');
+		if nodeRAWFormat then
+			return nodeRAWFormat;
 		end
 
 		getLoadedModules();
