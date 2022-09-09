@@ -44,91 +44,43 @@ function getSpellSet(nodeChar, sItemSource)
 end
 
 local function trim_spell_name(string_spell_name)
-	local string_spell_name_lower = string_spell_name:lower()
-	local is_greater = (string.find(string_spell_name_lower, ', greater') ~= nil)
-	local is_lesser = (string.find(string_spell_name_lower, ', lesser') ~= nil)
-	local is_communal = (string.find(string_spell_name_lower, ', communal') ~= nil)
-	local is_mass = (string.find(string_spell_name_lower, ', mass') ~= nil)
-	local is_maximized = (string.find(string_spell_name_lower, 'maximized') ~= nil)
-	local is_empowered = (string.find(string_spell_name_lower, 'empowered') ~= nil)
-	local is_quickened = (string.find(string_spell_name_lower, 'quickened') ~= nil)
-
-	-- remove tags from spell name
-	if is_greater then
-		string_spell_name = string_spell_name:gsub(', greater', '')
-		string_spell_name = string_spell_name:gsub(', Greater', '')
-	end
-	if is_lesser then
-		string_spell_name = string_spell_name:gsub(', lesser', '')
-		string_spell_name = string_spell_name:gsub(', Lesser', '')
-	end
-	if is_communal then
-		string_spell_name = string_spell_name:gsub(', communal', '')
-		string_spell_name = string_spell_name:gsub(', Communal', '')
-	end
-	if is_mass then
-		string_spell_name = string_spell_name:gsub(', mass', '')
-		string_spell_name = string_spell_name:gsub(', Mass', '')
-	end
-	if is_maximized then
-		string_spell_name = string_spell_name:gsub('maximized', '')
-		string_spell_name = string_spell_name:gsub('Maximized', '')
-	end
-	if is_empowered then
-		string_spell_name = string_spell_name:gsub('empowered', '')
-		string_spell_name = string_spell_name:gsub('Empowered', '')
-	end
-	if is_quickened then
-		string_spell_name = string_spell_name:gsub('quickened', '')
-		string_spell_name = string_spell_name:gsub('Quickened', '')
-	end
-
-	-- remove certain sets of characters
-	string_spell_name = string_spell_name:gsub('%u%u%u%u', '')
-	string_spell_name = string_spell_name:gsub('%u%u%u', '')
-	string_spell_name = string_spell_name:gsub('AP%d+', '')
-	string_spell_name = string_spell_name:gsub('%u%u', '')
-	string_spell_name = string_spell_name:gsub('.+:', '')
-	string_spell_name = string_spell_name:gsub(',.+', '')
-	string_spell_name = string_spell_name:gsub('%[.-%]', '')
-	string_spell_name = string_spell_name:gsub('%(.-%)', '')
-	string_spell_name = string_spell_name:gsub('%A+', '')
-
-	-- remove uppercase D or M at end of name
-	local number_name_end = string.find(string_spell_name, 'D', string.len(string_spell_name)) or
-					                        string.find(string_spell_name, 'M', string.len(string_spell_name))
-	if number_name_end then string_spell_name = string_spell_name:sub(1, number_name_end - 1) end
-
-	-- convert to lower-case
-	string_spell_name = string_spell_name:lower()
-
-	-- append relevant tags to end of spell name
-	if is_greater then string_spell_name = string_spell_name .. 'greater' end
-	if is_lesser then string_spell_name = string_spell_name .. 'lesser' end
-	if is_communal then string_spell_name = string_spell_name .. 'communal' end
-	if is_mass then string_spell_name = string_spell_name .. 'mass' end
+	string_spell_name = string_spell_name:lower();
+	string_spell_name = string_spell_name:gsub("%W", "");
 
 	return string_spell_name
 end
 
 local function getSpellFromItemName(sItemName)
+	local tLoadedModules;
 
-	local function getSpellAfterOf()
-		sItemName = sItemName:gsub('%[.+%]', '')
-		local _, j = sItemName:find('of ');
-		if j ~= nil then
-			local string_spell_name = sItemName:sub(j);
-			string_spell_name = trim_spell_name(string_spell_name)
-
-			return string_spell_name
+	local function getLoadedModules()
+		tLoadedModules = {};
+		local tAllModules = Module.getModules();
+		for _,sModuleName in ipairs(tAllModules) do
+			local tModuleData = Module.getModuleInfo(sModuleName);
+			if tModuleData.loaded then
+				tLoadedModules[#tLoadedModules+1] = tModuleData.name;
+			end
 		end
 	end
 
 	local function findSpellNode(sSpellName)
-		if sSpellName then
-			return (DB.findNode('spelldesc.' .. sSpellName .. '@*') or DB.findNode('spelldesc.category.' .. sSpellName .. '@*') or
-							   DB.findNode('spell.' .. sSpellName .. '@*') or DB.findNode('spell.category.' .. sSpellName .. '@*') or
-							   DB.findNode('reference.spells.' .. sSpellName .. '@*') or DB.findNode('reference.spells.category.' .. sSpellName .. '@*'));
+		getLoadedModules();
+		for _,sModuleName in ipairs(tLoadedModules) do
+			local nodeSpellModule = DB.findNode("spelldesc" .. "@" .. sModuleName);
+			if nodeSpellModule == nil then
+				nodeSpellModule = DB.findNode("reference.spells" .. "@" .. sModuleName);
+			end
+			if nodeSpellModule then
+				for _,nodeSpell in pairs(nodeSpellModule.getChildren()) do
+					local sModuleSpellName = DB.getValue(nodeSpell, "name", "");
+					if sModuleSpellName ~= "" then
+						if trim_spell_name(sModuleSpellName) == sSpellName then
+							return nodeSpell;
+						end
+					end
+				end
+			end
 		end
 	end
 
@@ -145,9 +97,7 @@ local function getSpellFromItemName(sItemName)
 	if sItemName and sItemName ~= '' then
 		local sSpellName = getSpellBetweenParenthesis();
 		if sSpellName then
-			return findSpellNode(sSpellName) or findSpellNode(getSpellAfterOf());
-		else
-			return findSpellNode(getSpellAfterOf())
+			return findSpellNode(sSpellName);
 		end
 	end
 end
