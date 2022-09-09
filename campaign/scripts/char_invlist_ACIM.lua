@@ -65,16 +65,17 @@ local function getSpellFromItemName(sItemName)
 	end
 
 	local function findSpellNode(sSpellName)
+		if DB.findNode('spelldesc.' .. sSpellName .. '@*') then
+			return DB.findNode('spelldesc.' .. sSpellName .. '@*');
+		end
+
 		getLoadedModules();
 		for _,sModuleName in ipairs(tLoadedModules) do
-			local nodeSpellModule = DB.findNode("spelldesc" .. "@" .. sModuleName);
-			if nodeSpellModule == nil then
-				nodeSpellModule = DB.findNode("reference.spells" .. "@" .. sModuleName);
-			end
+			local nodeSpellModule = DB.findNode('reference.spells' .. '@' .. sModuleName);
 			if nodeSpellModule then
 				for _,nodeSpell in pairs(nodeSpellModule.getChildren()) do
-					local sModuleSpellName = DB.getValue(nodeSpell, "name", "");
-					if sModuleSpellName ~= "" then
+					local sModuleSpellName = DB.getValue(nodeSpell, 'name', '');
+					if sModuleSpellName ~= '' then
 						if trim_spell_name(sModuleSpellName) == sSpellName then
 							return nodeSpell;
 						end
