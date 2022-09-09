@@ -35,7 +35,7 @@ local function usingExt(sExt) return StringManager.contains(Extension.getExtensi
 
 function getSpellSet(nodeChar, sItemSource)
 	if nodeChar and sItemSource ~= '' then
-		-- Debug.chat("getSpellSet", "sItemSource", sItemSource);
+		-- Debug.chat('getSpellSet', 'sItemSource', sItemSource);
 		for _, nodeSpellSet in pairs(DB.getChildren(nodeChar, _sSpellset)) do
 			-- Debug.chat(sItemSource, nodeSpellSet);
 			if DB.getValue(nodeSpellSet, 'source_name') == sItemSource then return nodeSpellSet; end
@@ -45,7 +45,10 @@ end
 
 local function trim_spell_name(string_spell_name)
 	string_spell_name = string_spell_name:lower();
-	string_spell_name = string_spell_name:gsub("%W", "");
+	-- check for potentional double brackets like in 'wand (magic missile (3rd))'
+	string_spell_name = string_spell_name:gsub('%b()', '')
+	string_spell_name = string_spell_name:gsub('%W', '');
+	string_spell_name = string_spell_name:gsub('heightened', '');
 
 	return string_spell_name
 end
@@ -215,9 +218,9 @@ local function getUsesAvailable(nodeItem, bWand)
 					if (nFieldCharges < nNameCharges) then return nFieldCharges; end
 				elseif usingExt('FG-PFRPG-Enhanced-Items') and (nNameCharges and (nFieldCharges == 0)) then
 					DB.removeHandler('charsheet.*.inventorylist.*.charge', 'onUpdate', onItemChanged)
-					DB.setValue(nodeItem, 'charge', 'number', nNameCharges); -- write charges from name to database node "charge"
+					DB.setValue(nodeItem, 'charge', 'number', nNameCharges); -- write charges from name to database node 'charge'
 					sName = sName:gsub(sCharges, ''):gsub('%[%]', ''); -- trim charges from name
-					DB.setValue(nodeItem, 'name', 'string', StringManager.trim(sName)); -- write trimmed name back to database node "name"
+					DB.setValue(nodeItem, 'name', 'string', StringManager.trim(sName)); -- write trimmed name back to database node 'name'
 					DB.addHandler('charsheet.*.inventorylist.*.charge', 'onUpdate', onItemChanged)
 					return nNameCharges;
 				else
@@ -299,7 +302,7 @@ function inventoryChanged(nodeChar, nodeItem, nodeTrigger)
 		if sCL then
 			local nNameCL = tonumber(sCL);
 			if nNameCL then
-				DB.setValue(nodeItem, 'cl', 'number', nNameCL); -- write CL from name to database node "cl"
+				DB.setValue(nodeItem, 'cl', 'number', nNameCL); -- write CL from name to database node 'cl'
 			end
 			return nNameCL or nCL;
 		end
