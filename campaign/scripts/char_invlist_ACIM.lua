@@ -90,7 +90,18 @@ local function getSpellFromItemName(sItemName)
 		local string_spell_name = sItemName:match('%b()');
 		if string_spell_name then
 			string_spell_name = string_spell_name:sub(2, -2);
-			string_spell_name = trim_spell_name(string_spell_name)
+			string_spell_name = trim_spell_name(string_spell_name);
+
+			return string_spell_name
+		end
+	end
+
+	local function getSpellAfterOf()
+		sItemName = sItemName:gsub('%[.+%]', '')
+		local _, j = sItemName:find('of ');
+		if j ~= nil then
+			local string_spell_name = sItemName:sub(j);
+			string_spell_name = trim_spell_name(string_spell_name);
 
 			return string_spell_name
 		end
@@ -100,6 +111,8 @@ local function getSpellFromItemName(sItemName)
 		local sSpellName = getSpellBetweenParenthesis();
 		if sSpellName then
 			return findSpellNode(sSpellName);
+		else
+			return findSpellNode(getSpellAfterOf())
 		end
 	end
 end
