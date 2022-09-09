@@ -43,6 +43,61 @@ function getSpellSet(nodeChar, sItemSource)
 	end
 end
 
+local function trim_spell_key(string_spell_name)
+	local tFormats = {
+		['Greater'] = false,
+		['Lesser'] = false,
+		['Communal'] = false,
+		['Mass'] = false,
+	};
+	local tTrims = {
+		['Maximized'] = false,
+		['Heightened'] = false,
+		['Empowered'] = false,
+		['Quickened'] = false
+	};
+
+	-- remove tags from spell name
+	for s, _ in pairs(tFormats) do
+		if string_spell_name:gsub(', '  .. s, '') or string_spell_name:gsub(', '  .. s:lower(), '') then
+			tTrims[s] = true
+		end
+	end
+	for s, _ in pairs(tTrims) do
+		if string_spell_name:gsub(', '  .. s, '') or string_spell_name:gsub(', '  .. s:lower(), '') then
+			tTrims[s] = true
+		end
+	end
+
+	-- remove certain sets of characters
+	string_spell_name = string_spell_name:gsub('%u%u%u%u', '')
+	string_spell_name = string_spell_name:gsub('%u%u%u', '')
+	string_spell_name = string_spell_name:gsub('AP%d+', '')
+	string_spell_name = string_spell_name:gsub('%u%u', '')
+	string_spell_name = string_spell_name:gsub('.+:', '')
+	string_spell_name = string_spell_name:gsub(',.+', '')
+	string_spell_name = string_spell_name:gsub('%[.-%]', '')
+	string_spell_name = string_spell_name:gsub('%(.-%)', '')
+	string_spell_name = string_spell_name:gsub('%A+', '')
+
+	-- remove uppercase D or M at end of name
+	local number_name_end = string.find(string_spell_name, 'D', string.len(string_spell_name)) or
+					                        string.find(string_spell_name, 'M', string.len(string_spell_name))
+	if number_name_end then string_spell_name = string_spell_name:sub(1, number_name_end - 1) end
+
+	-- convert to lower-case
+	string_spell_name = string_spell_name:lower()
+
+	-- append relevant tags to end of spell name
+	for s, v in pairs(tFormats) do
+		if tTrims[v] then
+			string_spell_name = string_spell_name .. s
+		end
+	end
+
+	return string_spell_name
+end
+
 local function trim_spell_name(string_spell_name)
 	string_spell_name = string_spell_name:lower();
 	-- check for potentional double brackets like in 'wand (magic missile (3rd))'
@@ -68,11 +123,12 @@ local function getSpellFromItemName(sItemName)
 	end
 
 	local function findSpellNode(sSpellName)
-		local nodeRAWFormat = DB.findNode('spelldesc.' .. sSpellName .. '@*');
-		if nodeRAWFormat then
-			return nodeRAWFormat;
+		local nodeSpellFast = DB.findNode('spelldesc.' .. trim_spell_key(sSpellName) .. '@*');
+		if nodeSpellFast then
+			return nodeSpellFast;
 		end
 
+		sSpellName = trim_spell_name(sSpellName);
 		getLoadedModules();
 		for _,sModuleName in ipairs(tLoadedModules) do
 			local nodeSpellModule = DB.findNode('reference.spells' .. '@' .. sModuleName);
@@ -89,29 +145,23 @@ local function getSpellFromItemName(sItemName)
 		end
 	end
 
-	local function getSpellBetweenParenthesis()
+	local function getSpellBetweenParentheses()
 		local string_spell_name = sItemName:match('%b()');
 		if string_spell_name then
-			string_spell_name = string_spell_name:sub(2, -2);
-			string_spell_name = trim_spell_name(string_spell_name);
-
-			return string_spell_name
+			return string_spell_name:sub(2, -2);
 		end
 	end
 
 	local function getSpellAfterOf()
 		sItemName = sItemName:gsub('%[.+%]', '')
 		local _, j = sItemName:find('of ');
-		if j ~= nil then
-			local string_spell_name = sItemName:sub(j);
-			string_spell_name = trim_spell_name(string_spell_name);
-
-			return string_spell_name
+		if j then
+			return sItemName:sub(j);
 		end
 	end
 
 	if sItemName and sItemName ~= '' then
-		local sSpellName = getSpellBetweenParenthesis();
+		local sSpellName = getSpellBetweenParentheses();
 		if sSpellName then
 			return findSpellNode(sSpellName);
 		else
