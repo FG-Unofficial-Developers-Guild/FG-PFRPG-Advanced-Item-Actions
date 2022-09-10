@@ -1,6 +1,7 @@
 --
 -- Please see the LICENSE.md file included with this distribution for attribution and copyright information.
 --
+-- luacheck: globals ItemManager.isWeapon ItemManager.isShield
 
 local function addDamageToWeapon(nodeWeapon, aDamage, nBonus, sStat, nStatMult, aCritMult, sFinalDamageType, bIsCorrosive, bIsFlaming,
                                  bIsFrost, bIsShocking)
@@ -42,8 +43,8 @@ end
 
 local function addToWeaponDB_new(nodeItem)
 	-- Parameter validation
-	if string.lower(DB.getValue(nodeItem, 'type', '')) ~= 'weapon' then
-		if string.lower(DB.getValue(nodeItem, 'subtype', '')) ~= 'shield' then
+	if ItemManager.isWeapon(nodeItem) then
+		if not ItemManager.isShield(nodeItem) then
 			return;
 		elseif DB.getValue(nodeItem, 'damage', '') == '' then
 			return;
