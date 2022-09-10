@@ -35,7 +35,7 @@ local function usingExt(sExt) return StringManager.contains(Extension.getExtensi
 
 function getSpellSet(nodeChar, sItemSource)
 	if nodeChar and sItemSource ~= '' then
-		-- Debug.chat("getSpellSet", "sItemSource", sItemSource);
+		-- Debug.chat('getSpellSet', 'sItemSource', sItemSource);
 		for _, nodeSpellSet in pairs(DB.getChildren(nodeChar, _sSpellset)) do
 			-- Debug.chat(sItemSource, nodeSpellSet);
 			if DB.getValue(nodeSpellSet, 'source_name') == sItemSource then return nodeSpellSet; end
@@ -43,44 +43,30 @@ function getSpellSet(nodeChar, sItemSource)
 	end
 end
 
-local function trim_spell_name(string_spell_name)
-	local string_spell_name_lower = string_spell_name:lower()
-	local is_greater = (string.find(string_spell_name_lower, ', greater') ~= nil)
-	local is_lesser = (string.find(string_spell_name_lower, ', lesser') ~= nil)
-	local is_communal = (string.find(string_spell_name_lower, ', communal') ~= nil)
-	local is_mass = (string.find(string_spell_name_lower, ', mass') ~= nil)
-	local is_maximized = (string.find(string_spell_name_lower, 'maximized') ~= nil)
-	local is_empowered = (string.find(string_spell_name_lower, 'empowered') ~= nil)
-	local is_quickened = (string.find(string_spell_name_lower, 'quickened') ~= nil)
+local function trim_spell_key(string_spell_name)
+	local tFormats = {
+		['Greater'] = false,
+		['Lesser'] = false,
+		['Communal'] = false,
+		['Mass'] = false,
+	};
+	local tTrims = {
+		['Maximized'] = false,
+		['Heightened'] = false,
+		['Empowered'] = false,
+		['Quickened'] = false
+	};
 
 	-- remove tags from spell name
-	if is_greater then
-		string_spell_name = string_spell_name:gsub(', greater', '')
-		string_spell_name = string_spell_name:gsub(', Greater', '')
+	for s, _ in pairs(tFormats) do
+		if string_spell_name:gsub(', '  .. s, '') or string_spell_name:gsub(', '  .. s:lower(), '') then
+			tTrims[s] = true
+		end
 	end
-	if is_lesser then
-		string_spell_name = string_spell_name:gsub(', lesser', '')
-		string_spell_name = string_spell_name:gsub(', Lesser', '')
-	end
-	if is_communal then
-		string_spell_name = string_spell_name:gsub(', communal', '')
-		string_spell_name = string_spell_name:gsub(', Communal', '')
-	end
-	if is_mass then
-		string_spell_name = string_spell_name:gsub(', mass', '')
-		string_spell_name = string_spell_name:gsub(', Mass', '')
-	end
-	if is_maximized then
-		string_spell_name = string_spell_name:gsub('maximized', '')
-		string_spell_name = string_spell_name:gsub('Maximized', '')
-	end
-	if is_empowered then
-		string_spell_name = string_spell_name:gsub('empowered', '')
-		string_spell_name = string_spell_name:gsub('Empowered', '')
-	end
-	if is_quickened then
-		string_spell_name = string_spell_name:gsub('quickened', '')
-		string_spell_name = string_spell_name:gsub('Quickened', '')
+	for s, _ in pairs(tTrims) do
+		if string_spell_name:gsub(', '  .. s, '') or string_spell_name:gsub(', '  .. s:lower(), '') then
+			tTrims[s] = true
+		end
 	end
 
 	-- remove certain sets of characters
@@ -103,49 +89,81 @@ local function trim_spell_name(string_spell_name)
 	string_spell_name = string_spell_name:lower()
 
 	-- append relevant tags to end of spell name
-	if is_greater then string_spell_name = string_spell_name .. 'greater' end
-	if is_lesser then string_spell_name = string_spell_name .. 'lesser' end
-	if is_communal then string_spell_name = string_spell_name .. 'communal' end
-	if is_mass then string_spell_name = string_spell_name .. 'mass' end
+	for s, v in pairs(tFormats) do
+		if tTrims[v] then
+			string_spell_name = string_spell_name .. s
+		end
+	end
+
+	return string_spell_name
+end
+
+local function trim_spell_name(string_spell_name)
+	string_spell_name = string_spell_name:lower();
+	-- check for potentional double brackets like in 'wand (magic missile (3rd))'
+	string_spell_name = string_spell_name:gsub('%b()', '')
+	string_spell_name = string_spell_name:gsub('%W', '');
+	string_spell_name = string_spell_name:gsub('heightened', '');
 
 	return string_spell_name
 end
 
 local function getSpellFromItemName(sItemName)
+	local tLoadedModules;
 
-	local function getSpellAfterOf()
-		sItemName = sItemName:gsub('%[.+%]', '')
-		local _, j = sItemName:find('of ');
-		if j ~= nil then
-			local string_spell_name = sItemName:sub(j);
-			string_spell_name = trim_spell_name(string_spell_name)
-
-			return string_spell_name
+	local function getLoadedModules()
+		tLoadedModules = {};
+		local tAllModules = Module.getModules();
+		for _,sModuleName in ipairs(tAllModules) do
+			local tModuleData = Module.getModuleInfo(sModuleName);
+			if tModuleData.loaded then
+				tLoadedModules[#tLoadedModules+1] = tModuleData.name;
+			end
 		end
 	end
 
 	local function findSpellNode(sSpellName)
-		if sSpellName then
-			return (DB.findNode('spelldesc.' .. sSpellName .. '@*') or DB.findNode('spelldesc.category.' .. sSpellName .. '@*') or
-							   DB.findNode('spell.' .. sSpellName .. '@*') or DB.findNode('spell.category.' .. sSpellName .. '@*') or
-							   DB.findNode('reference.spells.' .. sSpellName .. '@*') or DB.findNode('reference.spells.category.' .. sSpellName .. '@*'));
+		local nodeSpellFast = DB.findNode('spelldesc.' .. trim_spell_key(sSpellName) .. '@*');
+		if nodeSpellFast then
+			return nodeSpellFast;
+		end
+
+		sSpellName = trim_spell_name(sSpellName);
+		getLoadedModules();
+		for _,sModuleName in ipairs(tLoadedModules) do
+			local nodeSpellModule = DB.findNode('reference.spells' .. '@' .. sModuleName);
+			if nodeSpellModule then
+				for _,nodeSpell in pairs(nodeSpellModule.getChildren()) do
+					local sModuleSpellName = DB.getValue(nodeSpell, 'name', '');
+					if sModuleSpellName ~= '' then
+						if trim_spell_name(sModuleSpellName) == sSpellName then
+							return nodeSpell;
+						end
+					end
+				end
+			end
 		end
 	end
 
-	local function getSpellBetweenParenthesis()
+	local function getSpellBetweenParentheses()
 		local string_spell_name = sItemName:match('%b()');
 		if string_spell_name then
-			string_spell_name = string_spell_name:sub(2, -2);
-			string_spell_name = trim_spell_name(string_spell_name)
+			return string_spell_name:sub(2, -2);
+		end
+	end
 
-			return string_spell_name
+	local function getSpellAfterOf()
+		sItemName = sItemName:gsub('%[.+%]', '')
+		local _, j = sItemName:find('of ');
+		if j then
+			return sItemName:sub(j);
 		end
 	end
 
 	if sItemName and sItemName ~= '' then
-		local sSpellName = getSpellBetweenParenthesis();
+		local sSpellName = getSpellBetweenParentheses();
 		if sSpellName then
-			return findSpellNode(sSpellName) or findSpellNode(getSpellAfterOf());
+			return findSpellNode(sSpellName);
 		else
 			return findSpellNode(getSpellAfterOf())
 		end
@@ -250,9 +268,9 @@ local function getUsesAvailable(nodeItem, bWand)
 					if (nFieldCharges < nNameCharges) then return nFieldCharges; end
 				elseif usingExt('FG-PFRPG-Enhanced-Items') and (nNameCharges and (nFieldCharges == 0)) then
 					DB.removeHandler('charsheet.*.inventorylist.*.charge', 'onUpdate', onItemChanged)
-					DB.setValue(nodeItem, 'charge', 'number', nNameCharges); -- write charges from name to database node "charge"
+					DB.setValue(nodeItem, 'charge', 'number', nNameCharges); -- write charges from name to database node 'charge'
 					sName = sName:gsub(sCharges, ''):gsub('%[%]', ''); -- trim charges from name
-					DB.setValue(nodeItem, 'name', 'string', StringManager.trim(sName)); -- write trimmed name back to database node "name"
+					DB.setValue(nodeItem, 'name', 'string', StringManager.trim(sName)); -- write trimmed name back to database node 'name'
 					DB.addHandler('charsheet.*.inventorylist.*.charge', 'onUpdate', onItemChanged)
 					return nNameCharges;
 				else
@@ -334,7 +352,7 @@ function inventoryChanged(nodeChar, nodeItem, nodeTrigger)
 		if sCL then
 			local nNameCL = tonumber(sCL);
 			if nNameCL then
-				DB.setValue(nodeItem, 'cl', 'number', nNameCL); -- write CL from name to database node "cl"
+				DB.setValue(nodeItem, 'cl', 'number', nNameCL); -- write CL from name to database node 'cl'
 			end
 			return nNameCL or nCL;
 		end
