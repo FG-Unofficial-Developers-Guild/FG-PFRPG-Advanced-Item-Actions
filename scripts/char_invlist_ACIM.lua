@@ -44,18 +44,8 @@ function getSpellSet(nodeChar, sItemSource)
 end
 
 local function trim_spell_key(string_spell_name)
-	local tFormats = {
-		['Greater'] = false,
-		['Lesser'] = false,
-		['Communal'] = false,
-		['Mass'] = false,
-	};
-	local tTrims = {
-		['Maximized'] = false,
-		['Heightened'] = false,
-		['Empowered'] = false,
-		['Quickened'] = false
-	};
+	local tFormats = { ['Greater'] = false, ['Lesser'] = false, ['Communal'] = false, ['Mass'] = false };
+	local tTrims = { ['Maximized'] = false, ['Heightened'] = false, ['Empowered'] = false, ['Quickened'] = false };
 
 	-- remove tags from spell name
 	for s, _ in pairs(tFormats) do
@@ -91,7 +81,7 @@ local function trim_spell_key(string_spell_name)
 	-- append relevant tags to end of spell name
 	for s, v in pairs(tFormats) do
 		if tTrims[v] then
-			string_spell_name = string_spell_name .. s
+			string_spell_name = string_spell_name .. ', ' .. s
 		end
 	end
 
