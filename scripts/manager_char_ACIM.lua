@@ -56,7 +56,7 @@ local function addToWeaponDB_new(nodeItem)
 	if ItemManager.isShield(nodeItem) then
 		sType = DB.getValue(nodeItem, 'type', '')
 		sSubtype = DB.getValue(nodeItem, 'subtype', '')
-		DB.setValue(nodeItem, 'type', 'string', 'weapon')
+		DB.setValue(nodeItem, 'type', 'string', 'Weapon')
 		DB.setValue(nodeItem, 'subtype', 'string', 'melee')
 	end
 
