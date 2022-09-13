@@ -48,7 +48,8 @@ local addToWeaponDB_old;
 local function addToWeaponDB_new(nodeItem)
 	local sType, sSubtype
 
-	-- temporarily override type and subtype to count shields as weapons
+	-- temporarily override type and subtype of shields to
+	-- make the native function interpret them as melee weapons
 	if ItemManager.isShield(nodeItem) then
 		sType = DB.getValue(nodeItem, 'type', '')
 		sSubtype = DB.getValue(nodeItem, 'subtype', '')
@@ -56,6 +57,7 @@ local function addToWeaponDB_new(nodeItem)
 		DB.setValue(nodeItem, 'subtype', 'string', 'melee')
 	end
 
+	-- add weapon to weaponlist via ruleset native function
 	addToWeaponDB_old(nodeItem);
 
 	-- revert type and subtype
@@ -64,6 +66,7 @@ local function addToWeaponDB_new(nodeItem)
 		DB.setValue(nodeItem, 'subtype', 'string', sSubtype)
 	end
 
+	-- add extra d6 energy damage if appropriate
 	addEnergyDamage(nodeItem);
 end
 
