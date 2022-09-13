@@ -27,23 +27,19 @@ local function getSpecialProperties(nodeWeapon)
 	return tProps;
 end
 
-local function processWeapon(nodeWeapon)
-	local nodeDmgList = DB.createChild(nodeWeapon, 'damagelist');
-	for _, s in pairs(getSpecialProperties(nodeWeapon)) do
-		local nodeDmg = DB.createChild(nodeDmgList);
-		DB.setValue(nodeDmg, 'dice', 'dice', { 'd6' });
-		DB.setValue(nodeDmg, 'bonus', 'number', 0);
-		DB.setValue(nodeDmg, 'type', 'string', s);
-	end
-end
-
 -- runs provided function on each nodeWeapon matching the provided nodeItem
-local function modWeapon(nodeItem)
+local function addEnergyDamage(nodeItem)
 	local sPath = nodeItem.getPath();
 	for _,vWeapon in pairs(DB.getChildren(nodeItem.getChild('...'), 'weaponlist')) do
 		local _,sRecord = DB.getValue(vWeapon, 'shortcut', '', '');
 		if sRecord == sPath then
-			processWeapon(vWeapon)
+			local nodeDmgList = DB.createChild(vWeapon, 'damagelist');
+			for _, s in pairs(getSpecialProperties(vWeapon)) do
+				local nodeDmg = DB.createChild(nodeDmgList);
+				DB.setValue(nodeDmg, 'dice', 'dice', { 'd6' });
+				DB.setValue(nodeDmg, 'bonus', 'number', 0);
+				DB.setValue(nodeDmg, 'type', 'string', s);
+			end
 		end
 	end
 end
@@ -68,7 +64,7 @@ local function addToWeaponDB_new(nodeItem)
 		DB.setValue(nodeItem, 'subtype', 'string', sSubtype)
 	end
 
-	modWeapon(nodeItem);
+	addEnergyDamage(nodeItem);
 end
 
 local onCharItemDelete_old;
