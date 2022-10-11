@@ -249,7 +249,7 @@ local function getUsesAvailable(nodeItem, bWand)
 				local nNameCharges = tonumber(sCharges:match('%d+'))
 				if nNameCharges and (nFieldCharges ~= 0) then
 					if nFieldCharges < nNameCharges then return nFieldCharges end
-				elseif usingExt('FG-PFRPG-Enhanced-Items') and (nNameCharges and (nFieldCharges == 0)) then
+				elseif nNameCharges and (nFieldCharges == 0) then
 					DB.removeHandler('charsheet.*.inventorylist.*.charge', 'onUpdate', onItemChanged)
 					DB.setValue(nodeItem, 'charge', 'number', nNameCharges) -- write charges from name to database node 'charge'
 					sName = sName:gsub(sCharges, ''):gsub('%[%]', '') -- trim charges from name
@@ -413,7 +413,7 @@ function onInit()
 	DB.addHandler('charsheet.*.inventorylist.*.isidentified', 'onUpdate', onItemChanged)
 	DB.addHandler('charsheet.*.inventorylist.*.carried', 'onUpdate', onItemChanged)
 	DB.addHandler('charsheet.*.inventorylist.*.count', 'onUpdate', onItemChanged)
-	if usingExt('FG-PFRPG-Enhanced-Items') then DB.addHandler('charsheet.*.inventorylist.*.charge', 'onUpdate', onItemChanged) end
+	DB.addHandler('charsheet.*.inventorylist.*.charge', 'onUpdate', onItemChanged)
 	if usingExt('Advanced Charsheet') then _sSpellset = 'itemspellset' end
 end
 
@@ -421,5 +421,5 @@ function onClose()
 	DB.removeHandler('charsheet.*.inventorylist.*.isidentified', 'onUpdate', onItemChanged)
 	DB.removeHandler('charsheet.*.inventorylist.*.carried', 'onUpdate', onItemChanged)
 	DB.removeHandler('charsheet.*.inventorylist.*.count', 'onUpdate', onItemChanged)
-	if usingExt('FG-PFRPG-Enhanced-Items') then DB.removeHandler('charsheet.*.inventorylist.*.charge', 'onUpdate', onItemChanged) end
+	DB.removeHandler('charsheet.*.inventorylist.*.charge', 'onUpdate', onItemChanged)
 end
