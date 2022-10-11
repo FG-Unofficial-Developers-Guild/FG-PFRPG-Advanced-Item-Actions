@@ -265,7 +265,7 @@ local function getUsesAvailable(nodeItem, bWand)
 
 		nUsesAvailable = getWandCharges()
 		if nUsesAvailable == 0 then
-			if not bAnnnounced then
+			if usingExt('FG-PFRPG-Enhanced-Items') and not bAnnnounced then
 				ChatManager.SystemMessage(
 					string.format('%s has no remaining charges listed. Please check it for accuracy.', DB.getValue(nodeItem, 'name', 'This wand'))
 				)
@@ -360,7 +360,7 @@ function inventoryChanged(nodeChar, nodeItem, nodeTrigger)
 			end
 
 			if bWand then
-				if usingExt('FG-PFRPG-Enhanced-Items') then writeUses('charge') end
+				writeUses('charge')
 			else
 				writeUses('count')
 			end
