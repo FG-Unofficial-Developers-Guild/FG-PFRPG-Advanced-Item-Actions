@@ -113,7 +113,7 @@ local function getSpellFromItemName(sItemName)
 		for _, sModuleName in ipairs(tLoadedModules) do
 			local nodeSpellModule = DB.findNode('reference.spells' .. '@' .. sModuleName)
 			if nodeSpellModule then
-				for _, nodeSpell in pairs(nodeSpellModule.getChildren()) do
+				for _, nodeSpell in pairs(DB.getChildren(nodeSpellModule)) do
 					local sModuleSpellName = DB.getValue(nodeSpell, 'name', '')
 					if sModuleSpellName ~= '' then
 						if trim_spell_name(sModuleSpellName) == sSpellName then return nodeSpell end
@@ -147,7 +147,7 @@ end
 local function onItemChanged(nodeField)
 	local nodeChar = DB.getChild(nodeField, '....')
 	if ActorManager.resolveActor(nodeChar) then
-		local nodeItem = nodeField.getParent()
+		local nodeItem = DB.getParent(nodeField)
 		inventoryChanged(nodeChar, nodeItem, nodeField)
 	end
 end
@@ -157,9 +157,9 @@ local function addSpell(nodeSource, nodeSpellClass, nLevel)
 	if not nodeSource or not nodeSpellClass or not nLevel then return nil end
 
 	-- Create the new spell entry
-	local nodeTargetLevelSpells = nodeSpellClass.createChild('levels.level' .. nLevel .. '.spells')
+	local nodeTargetLevelSpells = DB.createChild(nodeSpellClass, 'levels.level' .. nLevel .. '.spells')
 	if not nodeTargetLevelSpells then return nil end
-	local nodeNewSpell = nodeTargetLevelSpells.createChild()
+	local nodeNewSpell = DB.createChild(nodeTargetLevelSpells)
 	if not nodeNewSpell then return nil end
 
 	-- Copy the spell details over
@@ -168,7 +168,7 @@ local function addSpell(nodeSource, nodeSpellClass, nLevel)
 	-- Convert the description field from module data
 	SpellManager.convertSpellDescToString(nodeNewSpell)
 
-	local nodeParent = nodeTargetLevelSpells.getParent()
+	local nodeParent = DB.getParent(nodeTargetLevelSpells)
 	if nodeParent then
 		-- Set the default cost for points casters
 		local nCost = tonumber(string.sub(nodeParent.getName(), -1)) or 0
@@ -185,9 +185,9 @@ local function addSpell(nodeSource, nodeSpellClass, nLevel)
 	if DB.getChildCount(nodeNewSpell, 'actions') == 0 then
 		SpellManager.parseSpell(nodeNewSpell)
 	else -- bmos adding Kel's tag parsing
-		local nodeActions = nodeNewSpell.getChild('actions')
+		local nodeActions = DB.getChild(nodeNewSpell, 'actions')
 		if nodeActions then
-			local nodeAction = nodeActions.getChildren()
+			local nodeAction = DB.getChildren(nodeActions)
 			if nodeAction then
 				for _, v in pairs(nodeAction) do
 					if DB.getValue(v, 'type') == 'cast' then
@@ -274,7 +274,7 @@ local function getUsesAvailable(nodeItem, bWand)
 			nUsesAvailable = 50
 		end
 	else
-		nUsesAvailable = nodeItem.getChild('count').getValue()
+		nUsesAvailable = DB.getChild(nodeItem, 'count').getValue()
 	end
 	return nUsesAvailable
 end
@@ -294,7 +294,7 @@ function inventoryChanged(nodeChar, nodeItem, nodeTrigger)
 
 	local nUsesAvailable = getUsesAvailable(nodeItem, bWand)
 
-	local sItemName = nodeItem.getChild('name').getValue()
+	local sItemName = DB.getChild(nodeItem, 'name').getValue()
 
 	local nodeSpell = getSpellFromItemName(sItemName)
 	if not nodeSpell then return end
@@ -345,12 +345,12 @@ function inventoryChanged(nodeChar, nodeItem, nodeTrigger)
 
 	local nCarried = DB.getValue(nodeItem, 'carried', 1)
 
-	local nodeSpellSet = getSpellSet(nodeChar, nodeItem.getPath())
+	local nodeSpellSet = getSpellSet(nodeChar, DB.getPath(nodeItem))
 	if nodeSpellSet then
 		local function updateUsesRemaining()
 			local function writeUses(fieldName)
 				-- don't update a field that triggered this code to be run
-				if not (nodeTrigger and nodeTrigger.getPath():match('.+%.inventorylist%..+%.' .. fieldName)) then
+				if not (nodeTrigger and DB.getPath(nodeTrigger):match('.+%.inventorylist%..+%.' .. fieldName)) then
 					DB.removeHandler('charsheet.*.inventorylist.*.' .. fieldName, 'onUpdate', onItemChanged)
 					local nodeSpellLevel = DB.getChild(nodeSpellSet, 'levels.level' .. nSpellLevel)
 					local nUsesRemaining = DB.getValue(nodeSpellSet, 'availablelevel' .. nSpellLevel, 0) - DB.getValue(nodeSpellLevel, 'totalcast', 0)
@@ -369,7 +369,7 @@ function inventoryChanged(nodeChar, nodeItem, nodeTrigger)
 
 		if nCarried ~= 2 then
 			local function removeSpellClass()
-				if nodeItem and nodeSpellSet and nSpellLevel then DB.deleteNode(nodeSpellSet) end
+				if nodeItem and nodeSpellSet and nSpellLevel then DB.deleteNodeNode(nodeSpellSet) end
 			end
 
 			removeSpellClass()
@@ -386,13 +386,13 @@ function inventoryChanged(nodeChar, nodeItem, nodeTrigger)
 		end
 	elseif nCarried == 2 then
 		local function addSpellset()
-			if not nodeChar or not nodeSpell or sItemName == '' or nodeItem.getPath() == '' or nSpellLevel < 0 or nSpellLevel > 9 then return end
-			local nodeNewSpellClass = nodeChar.createChild(_sSpellset).createChild()
+			if not nodeChar or not nodeSpell or sItemName == '' or DB.getPath(nodeItem) == '' or nSpellLevel < 0 or nSpellLevel > 9 then return end
+			local nodeNewSpellClass = DB.createChild(nodeChar, _sSpellset).createChild()
 			if nodeNewSpellClass then
 				DB.setValue(nodeNewSpellClass, 'label', 'string', sItemName)
 				DB.setValue(nodeNewSpellClass, 'castertype', 'string', 'spontaneous')
 				DB.setValue(nodeNewSpellClass, 'availablelevel' .. nSpellLevel, 'number', nUsesAvailable)
-				DB.setValue(nodeNewSpellClass, 'source_name', 'string', nodeItem.getPath())
+				DB.setValue(nodeNewSpellClass, 'source_name', 'string', DB.getPath(nodeItem))
 				DB.setValue(nodeNewSpellClass, 'cl', 'number', nCL)
 				DB.setValue(nodeChar, 'spellmode', 'string', 'standard')
 				local nodeNew = addSpell(nodeSpell, nodeNewSpellClass, nSpellLevel)

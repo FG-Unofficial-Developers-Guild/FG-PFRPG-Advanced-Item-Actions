@@ -27,8 +27,8 @@ end
 
 -- runs provided function on each nodeWeapon matching the provided nodeItem
 local function addEnergyDamage(nodeItem)
-	local sPath = nodeItem.getPath()
-	for _, vWeapon in pairs(DB.getChildren(nodeItem.getChild('...'), 'weaponlist')) do
+	local sPath = DB.getPath(nodeItem)
+	for _, vWeapon in pairs(DB.getChildren(DB.getChild(nodeItem, '...'), 'weaponlist')) do
 		local _, sRecord = DB.getValue(vWeapon, 'shortcut', '', '')
 		if sRecord == sPath then
 			local nodeDmgList = DB.createChild(vWeapon, 'damagelist')
@@ -74,7 +74,7 @@ local function onCharItemDelete_new(nodeItem, ...)
 
 	local sItemType = DB.getValue(nodeItem, 'type', ''):lower()
 	if sItemType == 'potion' or sItemType == 'wand' or sItemType == 'scroll' then
-		local nodeSpellSet = InvManagerACIM.getSpellSet(DB.getChild(nodeItem, '...'), nodeItem.getPath())
+		local nodeSpellSet = InvManagerACIM.getSpellSet(DB.getChild(nodeItem, '...'), DB.getPath(nodeItem))
 		if nodeSpellSet then DB.deleteNode(nodeSpellSet) end
 	end
 end
@@ -83,7 +83,7 @@ local onCharItemAdd_old
 local function onCharItemAdd_new(nodeItem, ...)
 	onCharItemAdd_old(nodeItem, ...)
 
-	InvManagerACIM.inventoryChanged(nodeItem.getChild('...'), nodeItem)
+	InvManagerACIM.inventoryChanged(DB.getChild(nodeItem, '...'), nodeItem)
 end
 
 -- Reset consumables on rest
