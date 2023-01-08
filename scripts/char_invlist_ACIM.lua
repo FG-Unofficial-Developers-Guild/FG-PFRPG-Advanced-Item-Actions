@@ -369,7 +369,7 @@ function inventoryChanged(nodeChar, nodeItem, nodeTrigger)
 
 		if nCarried ~= 2 then
 			local function removeSpellClass()
-				if nodeItem and nodeSpellSet and nSpellLevel then DB.deleteNodeNode(nodeSpellSet) end
+				if nodeItem and nodeSpellSet and nSpellLevel then DB.deleteNode(nodeSpellSet) end
 			end
 
 			removeSpellClass()
