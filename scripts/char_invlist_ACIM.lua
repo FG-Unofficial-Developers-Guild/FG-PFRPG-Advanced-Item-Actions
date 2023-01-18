@@ -171,12 +171,12 @@ local function addSpell(nodeSource, nodeSpellClass, nLevel)
 	local nodeParent = DB.getParent(nodeTargetLevelSpells)
 	if nodeParent then
 		-- Set the default cost for points casters
-		local nCost = tonumber(string.sub(nodeParent.getName(), -1)) or 0
+		local nCost = tonumber(string.sub(DB.getName(nodeParent), -1)) or 0
 		if nCost > 0 then nCost = ((nCost - 1) * 2) + 1 end
 		DB.setValue(nodeNewSpell, 'cost', 'number', nCost)
 
 		-- If spell level not visible, then make it so.
-		local sAvailablePath = '....available' .. nodeParent.getName()
+		local sAvailablePath = '....available' .. DB.getName(nodeParent)
 		local nAvailable = DB.getValue(nodeTargetLevelSpells, sAvailablePath, 1)
 		if nAvailable <= 0 then DB.setValue(nodeTargetLevelSpells, sAvailablePath, 'number', 1) end
 	end
