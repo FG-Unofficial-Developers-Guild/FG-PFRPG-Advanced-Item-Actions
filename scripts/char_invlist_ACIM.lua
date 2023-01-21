@@ -106,8 +106,8 @@ local function getSpellFromItemName(sItemName)
 
 	local function findSpellNode(sSpellName)
 		local nodeSpellFast = DB.findNode('spelldesc.' .. trim_spell_key(sSpellName) .. '@PFRPG - Spellbook Extended')
-							or DB.findNode('spelldesc.' .. trim_spell_key(sSpellName) .. '@PFRPG - Spellbook')
-							or DB.findNode('spelldesc.' .. trim_spell_key(sSpellName) .. '@*')
+			or DB.findNode('spelldesc.' .. trim_spell_key(sSpellName) .. '@PFRPG - Spellbook')
+			or DB.findNode('spelldesc.' .. trim_spell_key(sSpellName) .. '@*')
 		if nodeSpellFast then return nodeSpellFast end
 
 		sSpellName = trim_spell_name(sSpellName)
@@ -204,7 +204,10 @@ local function addSpell(nodeSource, nodeSpellClass, nLevel)
 			end
 		end
 	end
-	if type(nodeNewSpell) ~= 'databasenode' then Debug.console(nodeNewSpell, type(nodeNewSpell)); return end -- apparently needed when used with certain modules and extensions
+	if type(nodeNewSpell) ~= 'databasenode' then
+		Debug.console(nodeNewSpell, type(nodeNewSpell))
+		return
+	end -- avoid error when spell has level issues
 
 	return nodeNewSpell
 end
