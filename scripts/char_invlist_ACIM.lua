@@ -100,27 +100,36 @@ local function getSpellFromItemName(sItemName)
 		local tAllModules = Module.getModules()
 		for _, sModuleName in ipairs(tAllModules) do
 			local tModuleData = Module.getModuleInfo(sModuleName)
-			if tModuleData.loaded then tLoadedModules[#tLoadedModules + 1] = tModuleData.name end
+			if tModuleData.loaded then tLoadedModules[tModuleData.name] = tModuleData.name end
 		end
 	end
 
 	local function findSpellNode(sSpellName)
-		local nodeSpellFast = DB.findNode('spelldesc.' .. trim_spell_key(sSpellName) .. '@*')
+		local nodeSpellFast = DB.findNode('spelldesc.' .. trim_spell_key(sSpellName) .. '@PFRPG - Spellbook Extended')
+							or DB.findNode('spelldesc.' .. trim_spell_key(sSpellName) .. '@PFRPG - Spellbook')
+							or DB.findNode('spelldesc.' .. trim_spell_key(sSpellName) .. '@*')
 		if nodeSpellFast then return nodeSpellFast end
 
 		sSpellName = trim_spell_name(sSpellName)
 		getLoadedModules()
-		for _, sModuleName in ipairs(tLoadedModules) do
+
+		local function findSpellInModule(sModuleName)
 			local nodeSpellModule = DB.findNode('reference.spells' .. '@' .. sModuleName)
-			if nodeSpellModule then
-				for _, nodeSpell in pairs(DB.getChildren(nodeSpellModule)) do
-					local sModuleSpellName = DB.getValue(nodeSpell, 'name', '')
-					if sModuleSpellName ~= '' then
-						if trim_spell_name(sModuleSpellName) == sSpellName then return nodeSpell end
-					end
+			if not nodeSpellModule then return end
+			for _, nodeSpell in pairs(DB.getChildren(nodeSpellModule)) do
+				local sModuleSpellName = DB.getValue(nodeSpell, 'name', '')
+				if sModuleSpellName ~= '' then
+					if trim_spell_name(sModuleSpellName) == sSpellName then return nodeSpell end
 				end
 			end
 		end
+
+		local nodeSpell
+		for _, sModuleName in ipairs(tLoadedModules) do
+			nodeSpell = findSpellInModule(sModuleName)
+			if nodeSpell then break end
+		end
+		return nodeSpell
 	end
 
 	local function getSpellBetweenParentheses()
@@ -154,13 +163,12 @@ end
 
 local function addSpell(nodeSource, nodeSpellClass, nLevel)
 	-- Validate
-	if not nodeSource or not nodeSpellClass or not nLevel then return nil end
+	if not nodeSource or not nodeSpellClass or not nLevel then return end
 
 	-- Create the new spell entry
 	local nodeTargetLevelSpells = DB.createChild(nodeSpellClass, 'levels.level' .. nLevel .. '.spells')
-	if not nodeTargetLevelSpells then return nil end
+	if not nodeTargetLevelSpells then return end
 	local nodeNewSpell = DB.createChild(nodeTargetLevelSpells)
-	if not nodeNewSpell then return nil end
 
 	-- Copy the spell details over
 	DB.copyNode(nodeSource, nodeNewSpell)
@@ -168,18 +176,16 @@ local function addSpell(nodeSource, nodeSpellClass, nLevel)
 	-- Convert the description field from module data
 	SpellManager.convertSpellDescToString(nodeNewSpell)
 
-	local nodeParent = DB.getParent(nodeTargetLevelSpells)
-	if nodeParent then
-		-- Set the default cost for points casters
-		local nCost = tonumber(string.sub(DB.getName(nodeParent), -1)) or 0
-		if nCost > 0 then nCost = ((nCost - 1) * 2) + 1 end
-		DB.setValue(nodeNewSpell, 'cost', 'number', nCost)
+	local sNodeParent = DB.getName(DB.getParent(nodeTargetLevelSpells))
+	-- Set the default cost for points casters
+	local nCost = tonumber(string.sub(sNodeParent, -1)) or 0
+	if nCost > 0 then nCost = ((nCost - 1) * 2) + 1 end
+	DB.setValue(nodeNewSpell, 'cost', 'number', nCost)
 
-		-- If spell level not visible, then make it so.
-		local sAvailablePath = '....available' .. DB.getName(nodeParent)
-		local nAvailable = DB.getValue(nodeTargetLevelSpells, sAvailablePath, 1)
-		if nAvailable <= 0 then DB.setValue(nodeTargetLevelSpells, sAvailablePath, 'number', 1) end
-	end
+	-- If spell level not visible, then make it so.
+	local sAvailablePath = '....available' .. sNodeParent
+	local nAvailable = DB.getValue(nodeTargetLevelSpells, sAvailablePath, 1)
+	if nAvailable <= 0 then DB.setValue(nodeTargetLevelSpells, sAvailablePath, 'number', 1) end
 
 	-- Parse spell details to create actions
 	if DB.getChildCount(nodeNewSpell, 'actions') == 0 then
@@ -198,6 +204,7 @@ local function addSpell(nodeSource, nodeSpellClass, nLevel)
 			end
 		end
 	end
+	if type(nodeNewSpell) ~= 'databasenode' then Debug.console(nodeNewSpell, type(nodeNewSpell)); return end -- apparently needed when used with certain modules and extensions
 
 	return nodeNewSpell
 end
