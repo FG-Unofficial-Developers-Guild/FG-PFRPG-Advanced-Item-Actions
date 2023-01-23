@@ -397,7 +397,7 @@ function inventoryChanged(nodeChar, nodeItem, nodeTrigger)
 	elseif nCarried == 2 then
 		local function addSpellset()
 			if not nodeChar or not nodeSpell or sItemName == '' or DB.getPath(nodeItem) == '' or nSpellLevel < 0 or nSpellLevel > 9 then return end
-			local nodeNewSpellClass = DB.createChild(nodeChar, _sSpellset).createChild()
+			local nodeNewSpellClass = DB.createChild(DB.createChild(nodeChar, _sSpellset))
 			if nodeNewSpellClass then
 				DB.setValue(nodeNewSpellClass, 'label', 'string', sItemName)
 				DB.setValue(nodeNewSpellClass, 'castertype', 'string', 'spontaneous')
