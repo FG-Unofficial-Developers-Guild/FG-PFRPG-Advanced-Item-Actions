@@ -36,7 +36,7 @@ local function usingExt(sExt) return StringManager.contains(Extension.getExtensi
 function getSpellSet(nodeChar, sItemSource)
 	if nodeChar and sItemSource ~= '' then
 		-- Debug.chat('getSpellSet', 'sItemSource', sItemSource);
-		for _, nodeSpellSet in pairs(DB.getChildren(nodeChar, _sSpellset)) do
+		for _, nodeSpellSet in ipairs(DB.getChildList(nodeChar, _sSpellset)) do
 			-- Debug.chat(sItemSource, nodeSpellSet);
 			if DB.getValue(nodeSpellSet, 'source_name') == sItemSource then return nodeSpellSet end
 		end
@@ -116,7 +116,7 @@ local function getSpellFromItemName(sItemName)
 		local function findSpellInModule(sModuleName)
 			local nodeSpellModule = DB.findNode('reference.spells' .. '@' .. sModuleName)
 			if not nodeSpellModule then return end
-			for _, nodeSpell in pairs(DB.getChildren(nodeSpellModule)) do
+			for _, nodeSpell in ipairs(DB.getChildList(nodeSpellModule)) do
 				local sModuleSpellName = DB.getValue(nodeSpell, 'name', '')
 				if sModuleSpellName ~= '' then
 					if trim_spell_name(sModuleSpellName) == sSpellName then return nodeSpell end
@@ -407,7 +407,7 @@ function inventoryChanged(nodeChar, nodeItem, nodeTrigger)
 				DB.setValue(nodeChar, 'spellmode', 'string', 'standard')
 				local nodeNew = addSpell(nodeSpell, nodeNewSpellClass, nSpellLevel)
 				if nodeNew then
-					for _, nodeAction in pairs(DB.getChildren(nodeNew, 'actions')) do
+					for _, nodeAction in ipairs(DB.getChildList(nodeNew, 'actions')) do
 						if DB.getValue(nodeAction, 'type', '') == 'cast' then DB.setValue(nodeAction, 'usereset', 'string', 'consumable') end
 					end
 				end
