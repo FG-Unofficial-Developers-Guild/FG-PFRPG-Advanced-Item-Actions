@@ -34,12 +34,11 @@ local _sSpellset = 'spellset'
 local function usingExt(sExt) return StringManager.contains(Extension.getExtensions(), sExt) end
 
 function getSpellSet(nodeChar, sItemSource)
-	if nodeChar and sItemSource ~= '' then
-		-- Debug.chat('getSpellSet', 'sItemSource', sItemSource);
-		for _, nodeSpellSet in ipairs(DB.getChildList(nodeChar, _sSpellset)) do
-			-- Debug.chat(sItemSource, nodeSpellSet);
-			if DB.getValue(nodeSpellSet, 'source_name') == sItemSource then return nodeSpellSet end
-		end
+	if not nodeChar or sItemSource == '' then return end
+	-- Debug.chat('getSpellSet', 'sItemSource', sItemSource);
+	for _, nodeSpellSet in ipairs(DB.getChildList(nodeChar, _sSpellset)) do
+		-- Debug.chat(sItemSource, nodeSpellSet);
+		if DB.getValue(nodeSpellSet, 'source_name') == sItemSource then return nodeSpellSet end
 	end
 end
 
@@ -155,10 +154,8 @@ end
 
 local function onItemChanged(nodeField)
 	local nodeChar = DB.getChild(nodeField, '....')
-	if ActorManager.resolveActor(nodeChar) then
-		local nodeItem = DB.getParent(nodeField)
-		inventoryChanged(nodeChar, nodeItem, nodeField)
-	end
+	if not ActorManager.resolveActor(nodeChar) then return end
+	inventoryChanged(nodeChar, DB.getParent(nodeField), nodeField)
 end
 
 local function addSpell(nodeSource, nodeSpellClass, nLevel)
