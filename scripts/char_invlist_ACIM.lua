@@ -281,7 +281,7 @@ local function getUsesAvailable(nodeItem, bWand)
 			nUsesAvailable = 50
 		end
 	else
-		nUsesAvailable = DB.getChild(nodeItem, 'count').getValue()
+		nUsesAvailable = DB.getValue(nodeItem, 'count')
 	end
 	return nUsesAvailable
 end
@@ -301,7 +301,7 @@ function inventoryChanged(nodeChar, nodeItem, nodeTrigger)
 
 	local nUsesAvailable = getUsesAvailable(nodeItem, bWand)
 
-	local sItemName = DB.getChild(nodeItem, 'name').getValue()
+	local sItemName = DB.getValue(nodeItem, 'name')
 
 	local nodeSpell = getSpellFromItemName(sItemName)
 	if not nodeSpell then return end
