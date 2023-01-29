@@ -173,7 +173,7 @@ local function addSpell(nodeSource, nodeSpellClass, nLevel)
 	-- Convert the description field from module data
 	SpellManager.convertSpellDescToString(nodeNewSpell)
 
-	local sNodeParent = DB.getName(DB.getParent(nodeTargetLevelSpells))
+	local sNodeParent = DB.getName(nodeTargetLevelSpells, '..')
 	-- Set the default cost for points casters
 	local nCost = tonumber(string.sub(sNodeParent, -1)) or 0
 	if nCost > 0 then nCost = ((nCost - 1) * 2) + 1 end
