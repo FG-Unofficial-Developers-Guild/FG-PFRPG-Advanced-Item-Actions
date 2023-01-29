@@ -28,7 +28,7 @@ end
 -- runs provided function on each nodeWeapon matching the provided nodeItem
 local function addEnergyDamage(nodeItem)
 	local sPath = DB.getPath(nodeItem)
-	for _, vWeapon in ipairs(DB.getChildList(DB.getChild(nodeItem, '...'), 'weaponlist')) do
+	for _, vWeapon in ipairs(DB.getChildList(nodeItem, '...weaponlist')) do
 		local _, sRecord = DB.getValue(vWeapon, 'shortcut', '', '')
 		if sRecord == sPath then
 			local nodeDmgList = DB.createChild(vWeapon, 'damagelist')
