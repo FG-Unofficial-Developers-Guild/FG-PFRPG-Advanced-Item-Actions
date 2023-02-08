@@ -141,9 +141,7 @@ end
 local function getSpellFromItemName(sItemName)
 	if not sItemName or sItemName == '' then return end
 	local sSpellName = getSpellBetweenParentheses(sItemName) or getSpellAfterOf(sItemName)
-	if sSpellName then
-		return findSpellNode(sSpellName)
-	end
+	if sSpellName then return findSpellNode(sSpellName) end
 end
 
 local function onItemChanged(nodeField)
