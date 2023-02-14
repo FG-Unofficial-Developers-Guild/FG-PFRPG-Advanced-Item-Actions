@@ -120,7 +120,7 @@ local function findSpellNode(sSpellName)
 	getLoadedModules(tLoadedModules)
 
 	local nodeSpell
-	for _, sModuleName in ipairs(tLoadedModules) do
+	for _, sModuleName in pairs(tLoadedModules) do
 		nodeSpell = findSpellInModule(sModuleName, trim_spell_name(sSpellName))
 		if nodeSpell then break end
 	end
