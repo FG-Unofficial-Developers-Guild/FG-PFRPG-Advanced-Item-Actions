@@ -28,7 +28,7 @@ end
 -- runs provided function on each nodeWeapon matching the provided nodeItem
 local function addEnergyDamage(nodeItem)
 	local sPath = DB.getPath(nodeItem)
-	for _, vWeapon in pairs(DB.getChildren(DB.getChild(nodeItem, '...'), 'weaponlist')) do
+	for _, vWeapon in ipairs(DB.getChildList(nodeItem, '...weaponlist')) do
 		local _, sRecord = DB.getValue(vWeapon, 'shortcut', '', '')
 		if sRecord == sPath then
 			local nodeDmgList = DB.createChild(vWeapon, 'damagelist')
@@ -90,7 +90,7 @@ end
 local resetSpells_old
 local function resetSpells_new(nodeCaster, ...)
 	if ActorManager.isPC(nodeCaster) then
-		for _, nodeItem in pairs(DB.getChildren(nodeCaster, 'inventorylist')) do
+		for _, nodeItem in ipairs(DB.getChildList(nodeCaster, 'inventorylist')) do
 			if InvManagerACIM.inventoryChanged(nodeCaster, nodeItem) then
 				local nCarried = DB.getValue(nodeItem, 'carried', 1)
 				DB.setValue(nodeItem, 'carried', 'number', 1)
