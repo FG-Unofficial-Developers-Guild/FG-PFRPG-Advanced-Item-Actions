@@ -91,8 +91,7 @@ local function trim_spell_name(string_spell_name)
 	return string_spell_name
 end
 
-local function findSpellInModule(sModuleName, sSpellName)
-	local nodeSpellModule = DB.findNode('reference.spells' .. '@' .. sModuleName)
+local function findSpellInModule(nodeSpellModule, sSpellName)
 	if not nodeSpellModule then return end
 	for _, nodeSpell in ipairs(DB.getChildList(nodeSpellModule)) do
 		local sModuleSpellName = DB.getValue(nodeSpell, 'name', '')
@@ -119,9 +118,11 @@ local function findSpellNode(sSpellName)
 	local tLoadedModules = {}
 	getLoadedModules(tLoadedModules)
 
-	local nodeSpell
+	local nodeSpell = findSpellInModule(DB.findNode('spell'), trim_spell_name(sSpellName))
+	if nodeSpell then return nodeSpell end
+
 	for _, sModuleName in pairs(tLoadedModules) do
-		nodeSpell = findSpellInModule(sModuleName, trim_spell_name(sSpellName))
+		nodeSpell = findSpellInModule(DB.findNode('reference.spells' .. '@' .. sModuleName), trim_spell_name(sSpellName))
 		if nodeSpell then break end
 	end
 	return nodeSpell
