@@ -20,4 +20,4 @@ For example: Wand of Cure Light Wounds [13 charges]
 Originally created by [rmilmine](https://www.fantasygrounds.com/forums/member.php?215591-rmilmine).
 
 # Compatibility
-This extension has been tested with [FantasyGrounds Unity](https://www.fantasygrounds.com/home/FantasyGroundsUnity.php) 4.3.0 4.3.3 (2023-02-23).
+This extension has been tested with [FantasyGrounds Unity](https://www.fantasygrounds.com/home/FantasyGroundsUnity.php) 4.4.9 (2023-12-18).
