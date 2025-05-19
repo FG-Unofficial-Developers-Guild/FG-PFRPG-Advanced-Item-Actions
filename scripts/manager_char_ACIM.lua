@@ -9,13 +9,13 @@ local function getSpecialProperties(nodeWeapon)
 	local tProps = {}
 
 	local aProps = {
-		["acid"] = { "corrosive", "acid" },
-		["fire"] = { "flaming", "igniting" },
-		["cold"] = { "frost", "icy" },
-		["electricity"] = { "shock" },
+		['acid'] = { 'corrosive', 'acid' },
+		['fire'] = { 'flaming', 'igniting' },
+		['cold'] = { 'frost', 'icy' },
+		['electricity'] = { 'shock' },
 	}
 
-	local sPropsLower = DB.getValue(nodeWeapon, "properties", ""):lower()
+	local sPropsLower = DB.getValue(nodeWeapon, 'properties', ''):lower()
 	for s, t in pairs(aProps) do
 		for _, ss in pairs(t) do
 			if sPropsLower:match(ss) then
@@ -30,15 +30,15 @@ end
 -- runs provided function on each nodeWeapon matching the provided nodeItem
 local function addEnergyDamage(nodeItem)
 	local sPath = DB.getPath(nodeItem)
-	for _, vWeapon in ipairs(DB.getChildList(nodeItem, "...weaponlist")) do
-		local _, sRecord = DB.getValue(vWeapon, "shortcut", "", "")
+	for _, vWeapon in ipairs(DB.getChildList(nodeItem, '...weaponlist')) do
+		local _, sRecord = DB.getValue(vWeapon, 'shortcut', '', '')
 		if sRecord == sPath then
-			local nodeDmgList = DB.createChild(vWeapon, "damagelist")
+			local nodeDmgList = DB.createChild(vWeapon, 'damagelist')
 			for _, s in pairs(getSpecialProperties(vWeapon)) do
 				local nodeDmg = DB.createChild(nodeDmgList)
-				DB.setValue(nodeDmg, "dice", "dice", { "d6" })
-				DB.setValue(nodeDmg, "bonus", "number", 0)
-				DB.setValue(nodeDmg, "type", "string", s)
+				DB.setValue(nodeDmg, 'dice', 'dice', { 'd6' })
+				DB.setValue(nodeDmg, 'bonus', 'number', 0)
+				DB.setValue(nodeDmg, 'type', 'string', s)
 			end
 		end
 	end
@@ -51,10 +51,10 @@ local function addToWeaponDB_new(nodeItem)
 	-- temporarily override type and subtype of shields to
 	-- make the native function interpret them as melee weapons
 	if ItemManager.isShield(nodeItem) then
-		sType = DB.getValue(nodeItem, "type", "")
-		sSubtype = DB.getValue(nodeItem, "subtype", "")
-		DB.setValue(nodeItem, "type", "string", "Weapon")
-		DB.setValue(nodeItem, "subtype", "string", "melee")
+		sType = DB.getValue(nodeItem, 'type', '')
+		sSubtype = DB.getValue(nodeItem, 'subtype', '')
+		DB.setValue(nodeItem, 'type', 'string', 'Weapon')
+		DB.setValue(nodeItem, 'subtype', 'string', 'melee')
 	end
 
 	-- add weapon to weaponlist via ruleset native function
@@ -62,8 +62,8 @@ local function addToWeaponDB_new(nodeItem)
 
 	-- revert type and subtype
 	if sType and sSubtype then
-		DB.setValue(nodeItem, "type", "string", sType)
-		DB.setValue(nodeItem, "subtype", "string", sSubtype)
+		DB.setValue(nodeItem, 'type', 'string', sType)
+		DB.setValue(nodeItem, 'subtype', 'string', sSubtype)
 	end
 
 	-- add extra d6 energy damage if appropriate
@@ -74,9 +74,9 @@ local onCharItemDelete_old
 local function onCharItemDelete_new(nodeItem, ...)
 	onCharItemDelete_old(nodeItem, ...)
 
-	local sItemType = DB.getValue(nodeItem, "type", ""):lower()
-	if sItemType == "potion" or sItemType == "wand" or sItemType == "scroll" then
-		local nodeSpellSet = InvManagerACIM.getSpellSet(DB.getChild(nodeItem, "..."), DB.getPath(nodeItem))
+	local sItemType = DB.getValue(nodeItem, 'type', ''):lower()
+	if sItemType == 'potion' or sItemType == 'wand' or sItemType == 'scroll' then
+		local nodeSpellSet = InvManagerACIM.getSpellSet(DB.getChild(nodeItem, '...'), DB.getPath(nodeItem))
 		if nodeSpellSet then
 			DB.deleteNode(nodeSpellSet)
 		end
@@ -87,19 +87,19 @@ local onCharItemAdd_old
 local function onCharItemAdd_new(nodeItem, ...)
 	onCharItemAdd_old(nodeItem, ...)
 
-	InvManagerACIM.inventoryChanged(DB.getChild(nodeItem, "..."), nodeItem)
+	InvManagerACIM.inventoryChanged(DB.getChild(nodeItem, '...'), nodeItem)
 end
 
 -- Reset consumables on rest
 local resetSpells_old
 local function resetSpells_new(nodeCaster, ...)
 	if ActorManager.isPC(nodeCaster) then
-		for _, nodeItem in ipairs(DB.getChildList(nodeCaster, "inventorylist")) do
+		for _, nodeItem in ipairs(DB.getChildList(nodeCaster, 'inventorylist')) do
 			if InvManagerACIM.inventoryChanged(nodeCaster, nodeItem) then
-				local nCarried = DB.getValue(nodeItem, "carried", 1)
-				DB.setValue(nodeItem, "carried", "number", 1)
-				if OptionsManager.isOption("AIA_UnequipOnRest", "disabled") then
-					DB.setValue(nodeItem, "carried", "number", nCarried)
+				local nCarried = DB.getValue(nodeItem, 'carried', 1)
+				DB.setValue(nodeItem, 'carried', 'number', 1)
+				if OptionsManager.isOption('AIA_UnequipOnRest', 'disabled') then
+					DB.setValue(nodeItem, 'carried', 'number', nCarried)
 				end
 			end
 		end
@@ -108,20 +108,13 @@ local function resetSpells_new(nodeCaster, ...)
 end
 
 function onInit()
-	OptionsManager.registerOption2(
-		"AIA_UnequipOnRest",
-		false,
-		"option_header_game",
-		"option_label_AIA_unequip_on_rest",
-		"option_entry_cycler",
-		{
-			labels = "option_val_off",
-			values = "disabled",
-			baselabel = "option_val_on",
-			baseval = "enabled",
-			default = "enabled",
-		}
-	)
+	OptionsManager.registerOption2('AIA_UnequipOnRest', false, 'option_header_game', 'option_label_AIA_unequip_on_rest', 'option_entry_cycler', {
+		labels = 'option_val_off',
+		values = 'disabled',
+		baselabel = 'option_val_on',
+		baseval = 'enabled',
+		default = 'enabled',
+	})
 
 	addToWeaponDB_old = CharManager.addToWeaponDB
 	CharManager.addToWeaponDB = addToWeaponDB_new
