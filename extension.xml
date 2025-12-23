@@ -4,7 +4,7 @@
 		<name>Feature: Advanced Item Actions</name>
 		<version>1.15</version>
 		<loadorder>60</loadorder>
-		<author>rmilmine and bmos</author>
+		<author>rmilmine and bmos (Ramona T)</author>
 		<description>This extension takes consumables equipped in the inventory and adds them to the action tab.</description>
 		<ruleset>
 			<name>3.5E</name>
